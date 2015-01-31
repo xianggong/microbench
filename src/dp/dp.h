@@ -24,9 +24,10 @@ class DynamicParallelism
 	cl_kernel        kernel_saxpy_dp;
 
 	// Parameters
-	static const int glbSize = 8192;
-	static const int blkSize = 512;
-
+	int glbSize;
+	int locSize;
+	float factor;
+	
 	// User managed SVM buffers
 	float *saxpy_src_0;
 	float *saxpy_src_1;
