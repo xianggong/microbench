@@ -1,4 +1,4 @@
-#include "dp.h"
+#include "template.h"
 
 #include <memory>
 
@@ -23,7 +23,7 @@ void Template::InitKernel()
 	cl_int err;
 
 	// Open kernel file
-        file->open("dp_Kernels.cl");
+        file->open("template_Kernels.cl");
 
         // Create program
         const char *source = file->getSourceChar();
@@ -40,7 +40,7 @@ void Template::InitKernel()
 
 int main(int argc, char const *argv[])
 {
-	std::unique_ptr<Template> dp(new Template());
+	std::unique_ptr<Template> tp(new Template());
 	
 	return 0;
 }
