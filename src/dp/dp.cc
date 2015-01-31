@@ -151,5 +151,7 @@ int main(int argc, char const *argv[])
 	dp->runStride();
 	dp->runDP();
 	
+	printf("Done!\n");
+	
 	return 0;
 }
