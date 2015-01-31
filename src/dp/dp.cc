@@ -132,6 +132,10 @@ void DynamicParallelism::runDP()
 int main(int argc, char const *argv[])
 {
 	std::unique_ptr<DynamicParallelism> dp(new DynamicParallelism());
+
+	dp->runNaive();
+	dp->runStride();
+	dp->runDP();
 	
 	return 0;
 }
