@@ -1,5 +1,5 @@
-#ifndef DYNAMIC_PARALLELISM
-#define DYNAMIC_PARALLELISM
+#ifndef DYNAMIC_PARALLELISM_H
+#define DYNAMIC_PARALLELISM_H
 
 #include <clUtil.h>
 

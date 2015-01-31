@@ -1,5 +1,5 @@
 set( FOLDER_NAME src )
-set( SUBDIRECTORIES dp template)
+set( SUBDIRECTORIES dp wgf template )
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 cmake_minimum_required( VERSION 2.6.0 )
