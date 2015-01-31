@@ -15,14 +15,22 @@ DynamicParallelism::DynamicParallelism()
 	glbSize = 8192;
 	locSize = 512;
 	factor  = 2.3f;
+
+	init();
 }
 
 DynamicParallelism::~DynamicParallelism()
 {
-
+	clean();
 }
 
-void DynamicParallelism::InitKernel()
+void DynamicParallelism::init()
+{
+	initKernel();
+	initBuffer();
+}
+
+void DynamicParallelism::initKernel()
 {
 	cl_int err;
 
@@ -48,7 +56,7 @@ void DynamicParallelism::InitKernel()
         checkOpenCLErrors(err, "Failed to create saxpy_dp kernel");
 }
 
-void DynamicParallelism::InitBuffer()
+void DynamicParallelism::initBuffer()
 {
 	cl_int err;
 	size_t glbSizeBytes = glbSize * sizeof(float);
@@ -76,7 +84,13 @@ void DynamicParallelism::InitBuffer()
 
 }
 
-void DynamicParallelism::CleanKernel()
+void DynamicParallelism::clean()
+{
+	cleanKernel();
+	cleanBuffer();
+}
+
+void DynamicParallelism::cleanKernel()
 {
 	cl_int err;
 	
@@ -89,7 +103,7 @@ void DynamicParallelism::CleanKernel()
 	checkOpenCLErrors(err, "Failed to release program");
 }
 
-void DynamicParallelism::CleanBuffer()
+void DynamicParallelism::cleanBuffer()
 {
 	clSVMFreeSafe(context, saxpy_src_0);
 	clSVMFreeSafe(context, saxpy_src_1);

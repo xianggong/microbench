@@ -33,11 +33,13 @@ class DynamicParallelism
 	float *saxpy_src_1;
 	float *saxpy_dst_0;
 
-	void InitKernel();
-	void InitBuffer();
+	void init();
+	void initKernel();
+	void initBuffer();
 
-	void CleanKernel();
-	void CleanBuffer();
+	void clean();
+	void cleanKernel();
+	void cleanBuffer();
 
 public:
 	DynamicParallelism();
