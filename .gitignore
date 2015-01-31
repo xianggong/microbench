@@ -23,6 +23,16 @@
 *.lib
 
 # Executables
+bin/
 *.exe
 *.out
 *.app
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+Makefile
+*.cmake
+
+# ctags
+.tag*
