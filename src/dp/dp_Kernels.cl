@@ -6,7 +6,7 @@ __kernel void saxpy_naive(         const int    numElems,
 {
     uint gid = get_global_id(0);
 
-    if (gid < N)
+    if (gid < numElems)
         dst_0[gid] = factor * src_0[gid] * src_1[gid];
 }
 
