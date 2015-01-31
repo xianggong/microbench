@@ -40,10 +40,12 @@ endif()
 ############################################################################
 
 # Find OpenCL include and libs
-find_path( OPENCL_INCLUDE_DIRS
-    NAMES OpenCL/cl.h CL/cl.h
-    HINTS $ENV{AMDAPPSDKROOT}/include ../../include/
-)
+#find_path( OPENCL_INCLUDE_DIRS
+#    NAMES OpenCL/cl.h CL/cl.h
+#    HINTS ../../include $ENV{AMDAPPSDKROOT}/include 
+#)
+set(OPENCL_INCLUDE_DIRS ../../include)
+message("-- Found CL header path = " ${OPENCL_INCLUDE_DIRS})
 mark_as_advanced(OPENCL_INCLUDE_DIRS)
 
 find_library( OPENCL_LIBRARIES
@@ -51,7 +53,8 @@ find_library( OPENCL_LIBRARIES
 	HINTS ../../lib/ $ENV{AMDAPPSDKROOT}/lib
 	PATH_SUFFIXES ${PLATFORM}${BITNESS} ${BITNESS_SUFFIX}
 )
-mark_as_advanced( OPENCL_LIBRARIES )
+message("-- Found CL lib path = " ${OPENCL_LIBRARIES})
+mark_as_advanced(OPENCL_LIBRARIES)
 
 if( OPENCL_INCLUDE_DIRS STREQUAL "" OR OPENCL_LIBRARIES STREQUAL "")
 	message( FATAL_ERROR "Could not locate OpenCL include & libs" )

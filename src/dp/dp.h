@@ -3,5 +3,22 @@
 
 #include <clUtil.h>
 
+using namespace clHelper;
+
+class DynamicParallelism
+{
+	clRuntime *runtime;
+	clFile    *file;
+
+	cl_platform_id platform;
+	cl_device_id   device;
+	cl_context     context;
+
+
+public:
+	DynamicParallelism();
+	~DynamicParallelism();
+	
+};
 
 #endif
