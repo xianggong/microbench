@@ -13,7 +13,7 @@ DynamicParallelism::DynamicParallelism()
 	cmdQueue = runtime->getCmdQueue(0);
 
 	glbSize = 8192;
-	locSize = 512;
+	locSize = 256;
 	factor  = 2.3f;
 
 	init();
