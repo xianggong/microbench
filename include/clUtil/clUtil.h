@@ -8,6 +8,9 @@
 namespace clHelper
 {
 
+#ifndef clSVMFreeSafe
+#define clSVMFreeSafe(ctx, ptr) if(ptr) clSVMFree(ctx, ptr)
+#endif
 
 } // namespace clHelper
 
