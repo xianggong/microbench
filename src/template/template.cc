@@ -2,7 +2,7 @@
 
 #include <memory>
 
-DynamicParallelism::DynamicParallelism()
+Template::Template()
 {
 	runtime  = clRuntime::getInstance();
 	file     = clFile::getInstance();
@@ -13,12 +13,12 @@ DynamicParallelism::DynamicParallelism()
 	cmdQueue = runtime->getCmdQueue(0);
 }
 
-DynamicParallelism::~DynamicParallelism()
+Template::~Template()
 {
 
 }
 
-void DynamicParallelism::InitKernel()
+void Template::InitKernel()
 {
 	cl_int err;
 
@@ -40,7 +40,7 @@ void DynamicParallelism::InitKernel()
 
 int main(int argc, char const *argv[])
 {
-	std::unique_ptr<DynamicParallelism> dp(new DynamicParallelism());
+	std::unique_ptr<Template> dp(new Template());
 	
 	return 0;
 }
