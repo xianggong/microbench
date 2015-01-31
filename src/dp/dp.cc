@@ -32,9 +32,8 @@ void DynamicParallelism::InitKernel()
         checkOpenCLErrors(err, "Failed to create Program with source\n");
 
         // Create program with OpenCL 2.0 support
-        err = clBuildProgram(program, 0, NULL, "-I. -cl-std=CL2.0", NULL, NULL);
+        err = clBuildProgram(program, 0, NULL, "-I. -cl-std=CL2.0 -save-temps", NULL, NULL);
         checkOpenCLErrors(err, "Failed to build program...\n");
-
 }
 
 
