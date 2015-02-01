@@ -42,7 +42,7 @@ class DynamicParallelism
 	void cleanBuffer();
 
 public:
-	DynamicParallelism();
+	DynamicParallelism(int N = 8192);
 	~DynamicParallelism();
 
 	void runNaive();

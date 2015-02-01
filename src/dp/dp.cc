@@ -2,39 +2,39 @@
 
 #include <memory>
 
-DynamicParallelism::DynamicParallelism()
+DynamicParallelism::DynamicParallelism(int N)
 {
-	runtime  = clRuntime::getInstance();
-	file     = clFile::getInstance();
+        runtime  = clRuntime::getInstance();
+        file     = clFile::getInstance();
 
-	platform = runtime->getPlatformID();
-	device   = runtime->getDevice();
-	context  = runtime->getContext();
-	cmdQueue = runtime->getCmdQueue(0);
+        platform = runtime->getPlatformID();
+        device   = runtime->getDevice();
+        context  = runtime->getContext();
+        cmdQueue = runtime->getCmdQueue(0);
 
-	glbSize = 8192;
-	locSize = 256;
-	factor  = 2.3f;
+        glbSize = N;
+        locSize = 256;
+        factor  = 2.3f;
 
-	init();
+        init();
 }
 
 DynamicParallelism::~DynamicParallelism()
 {
-	clean();
+        clean();
 }
 
 void DynamicParallelism::init()
 {
-	initKernel();
-	initBuffer();
+        initKernel();
+        initBuffer();
 }
 
 void DynamicParallelism::initKernel()
 {
-	cl_int err;
+        cl_int err;
 
-	// Open kernel file
+        // Open kernel file
         file->open("dp_Kernels.cl");
 
         // Create program
@@ -58,67 +58,94 @@ void DynamicParallelism::initKernel()
 
 void DynamicParallelism::initBuffer()
 {
-	cl_int err;
-	size_t glbSizeBytes = glbSize * sizeof(float);
+        cl_int err;
+        size_t glbSizeBytes = glbSize * sizeof(float);
 
-	saxpy_src_0 = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY, glbSizeBytes, 0);
-	saxpy_src_1 = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY, glbSizeBytes, 0);
-	saxpy_dst_0 = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, glbSizeBytes, 0);
+        saxpy_src_0 = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY, glbSizeBytes, 0);
+        saxpy_src_1 = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY, glbSizeBytes, 0);
+        saxpy_dst_0 = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, glbSizeBytes, 0);
 
-	float one = 1.0f;
-	float two = 2.0f;
-	float three = 3.0f;
+        float one = 1.0f;
+        float two = 2.0f;
+        float three = 3.0f;
 
+        err  = clEnqueueSVMMemFill(cmdQueue, saxpy_src_0, (const void *)&one, sizeof(float), glbSizeBytes, 0, NULL, NULL);
+        err  = clEnqueueSVMMemFill(cmdQueue, saxpy_src_1, (const void *)&two, sizeof(float), glbSizeBytes, 0, NULL, NULL);
+        err |= clEnqueueSVMMemFill(cmdQueue, saxpy_dst_0, (const void *)&three, sizeof(float), glbSizeBytes, 0, NULL, NULL);
+        checkOpenCLErrors(err, "Failed to fill SVM buffers");
 
-	err  = clEnqueueSVMMemFill(cmdQueue, saxpy_src_0, (const void *)&one, sizeof(float), glbSizeBytes, 0, NULL, NULL);
-	err  = clEnqueueSVMMemFill(cmdQueue, saxpy_src_1, (const void *)&two, sizeof(float), glbSizeBytes, 0, NULL, NULL);
-	err |= clEnqueueSVMMemFill(cmdQueue, saxpy_dst_0, (const void *)&three, sizeof(float), glbSizeBytes, 0, NULL, NULL);
-	checkOpenCLErrors(err, "Failed to fill SVM buffers");
-
-	err = clFlush(cmdQueue);
-	checkOpenCLErrors(err, "Failed to clFlush cmdQueue");
+        err = clFlush(cmdQueue);
+        checkOpenCLErrors(err, "Failed to clFlush cmdQueue");
 
 }
 
 void DynamicParallelism::clean()
 {
-	cleanKernel();
-	cleanBuffer();
+        cleanKernel();
+        cleanBuffer();
 }
 
 void DynamicParallelism::cleanKernel()
 {
-	cl_int err;
-	
-	err = clReleaseKernel(kernel_saxpy_naive);
-	err |= clReleaseKernel(kernel_saxpy_stride);
-	err |= clReleaseKernel(kernel_saxpy_dp);
-	checkOpenCLErrors(err, "Failed to release kernels");
+        cl_int err;
+        
+        err = clReleaseKernel(kernel_saxpy_naive);
+        err |= clReleaseKernel(kernel_saxpy_stride);
+        err |= clReleaseKernel(kernel_saxpy_dp);
+        checkOpenCLErrors(err, "Failed to release kernels");
 
-	err = clReleaseProgram(program);
-	checkOpenCLErrors(err, "Failed to release program");
+        err = clReleaseProgram(program);
+        checkOpenCLErrors(err, "Failed to release program");
 }
 
 void DynamicParallelism::cleanBuffer()
 {
-	clSVMFreeSafe(context, saxpy_src_0);
-	clSVMFreeSafe(context, saxpy_src_1);
-	clSVMFreeSafe(context, saxpy_dst_0);
+        clSVMFreeSafe(context, saxpy_src_0);
+        clSVMFreeSafe(context, saxpy_src_1);
+        clSVMFreeSafe(context, saxpy_dst_0);
 }
 
 void DynamicParallelism::runNaive()
 {
-	cl_int err;
-	
-	size_t globalSize[1] = {(size_t)glbSize};
-	size_t localSize[1]  = {(size_t)locSize};
+        cl_int err;
+        
+        size_t globalSize[1] = {(size_t)glbSize};
+        size_t localSize[1]  = {(size_t)locSize};
 
-	err  = clSetKernelArg(kernel_saxpy_naive, 0, sizeof(int), (void *)&glbSize);
-	err |= clSetKernelArg(kernel_saxpy_naive, 1, sizeof(int), (void *)&factor);
-	err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 2, saxpy_src_0);
-	err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 3, saxpy_src_1);
-	err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 4, saxpy_dst_0);
-	checkOpenCLErrors(err, "Failed to set args in saxpy_naive kernel");
+        err  = clSetKernelArg(kernel_saxpy_naive, 0, sizeof(int), (void *)&glbSize);
+        err |= clSetKernelArg(kernel_saxpy_naive, 1, sizeof(int), (void *)&factor);
+        err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 2, saxpy_src_0);
+        err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 3, saxpy_src_1);
+        err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 4, saxpy_dst_0);
+        checkOpenCLErrors(err, "Failed to set args in saxpy_naive kernel");
+
+        err = clEnqueueNDRangeKernel(
+                cmdQueue,
+                kernel_saxpy_naive,
+                1,
+                0, globalSize, localSize,
+                0, 0, 0
+        );
+        checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
+}
+
+void DynamicParallelism::runStride()
+{
+        cl_int err;
+        
+        cl_int numCU;
+        err = clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_int), &numCU, NULL);
+        checkOpenCLErrors(err, "Failed to query number of CU");
+
+        size_t globalSize[1] = {(size_t) numCU * 64};
+        size_t localSize[1]  = {(size_t)locSize};
+
+        err  = clSetKernelArg(kernel_saxpy_naive, 0, sizeof(int), (void *)&glbSize);
+        err |= clSetKernelArg(kernel_saxpy_naive, 1, sizeof(int), (void *)&factor);
+        err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 2, saxpy_src_0);
+        err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 3, saxpy_src_1);
+        err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 4, saxpy_dst_0);
+        checkOpenCLErrors(err, "Failed to set args in saxpy_naive kernel");
 
         err = clEnqueueNDRangeKernel(
                 cmdQueue,
@@ -129,42 +156,37 @@ void DynamicParallelism::runNaive()
         );
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
 
-	// Map SVM buffers 
-	size_t glbSizeBytes = glbSize * sizeof(float);	
-	err  = clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MAP_READ, saxpy_dst_0, glbSizeBytes, 0, NULL, NULL);
-	checkOpenCLErrors(err, "Failed to map SVM buffers for checking result");
+        // Map SVM buffers 
+        size_t glbSizeBytes = glbSize * sizeof(float);        
+        err  = clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MAP_READ, saxpy_dst_0, glbSizeBytes, 0, NULL, NULL);
+        checkOpenCLErrors(err, "Failed to map SVM buffers for checking result");
 
-	// Check result
-	for (int i = 0; i < glbSize / locSize; ++i)
-		printf("%f\n", saxpy_dst_0[i]);
+        // Check result
+        for (int i = 0; i < glbSize / locSize; ++i)
+        printf("%f\n", saxpy_dst_0[i]);
 
-	// Unmap SVM buffers
-	err  = clEnqueueSVMUnmap(cmdQueue, saxpy_dst_0, 0, NULL, NULL);
-	checkOpenCLErrors(err, "Failed to unmap SVM buffers after checking result");
+        // Unmap SVM buffers
+        err  = clEnqueueSVMUnmap(cmdQueue, saxpy_dst_0, 0, NULL, NULL);
+        checkOpenCLErrors(err, "Failed to unmap SVM buffers after checking result");
 
-
-}
-
-void DynamicParallelism::runStride()
-{
 
 }
 
 void DynamicParallelism::runDP()
 {
-	
+        
 }
 int main(int argc, char const *argv[])
 {
-	std::unique_ptr<DynamicParallelism> dp(new DynamicParallelism());
+        std::unique_ptr<DynamicParallelism> dp(new DynamicParallelism());
 
-	printf("Running...\n");
+        printf("Running...\n");
 
-	dp->runNaive();
-	dp->runStride();
-	dp->runDP();
-	
-	printf("Done!\n");
+        dp->runNaive();
+        dp->runStride();
+        dp->runDP();
+        
+        printf("Done!\n");
 
-	return 0;
+        return 0;
 }
