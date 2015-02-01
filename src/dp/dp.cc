@@ -143,8 +143,7 @@ void DynamicParallelism::runNaive()
 		printf("%f\n", saxpy_dst_0[i]);
 
 	// Unmap SVM buffers
-	err  = clEnqueueSVMUnmap(cmdQueue, saxpy_src_0, 0, NULL, NULL);
-	err |= clEnqueueSVMUnmap(cmdQueue, saxpy_src_1, 0, NULL, NULL);
+	err  = clEnqueueSVMUnmap(cmdQueue, saxpy_dst_0, 0, NULL, NULL);
 	checkOpenCLErrors(err, "Failed to unmap SVM buffers after checking result");
 
 
