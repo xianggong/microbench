@@ -171,29 +171,27 @@ void DynamicParallelism::runStride()
         double end = time_stamp();
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
         printf("runStride takes %f\n", end - start);
-
-        // Map SVM buffers 
-        size_t glbSizeBytes = glbSize * sizeof(float);        
-        err  = clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MAP_READ, saxpy_dst_0, glbSizeBytes, 0, NULL, NULL);
-        checkOpenCLErrors(err, "Failed to map SVM buffers for checking result");
-
-        // Check result
-        for (int i = 0; i < glbSize; i += locSize)
-        printf("%f\n", saxpy_dst_0[i]);
-
-        // Unmap SVM buffers
-        err  = clEnqueueSVMUnmap(cmdQueue, saxpy_dst_0, 0, NULL, NULL);
-        checkOpenCLErrors(err, "Failed to unmap SVM buffers after checking result");
-
 }
 
 void DynamicParallelism::runDP()
 {
         
 }
+
 int main(int argc, char const *argv[])
 {
-        std::unique_ptr<DynamicParallelism> dp(new DynamicParallelism());
+	std::unique_ptr<DynamicParallelism> dp;
+
+	if (argc > 2)
+	{
+		printf("Usage: ./dp #\n");
+		return -1;
+	}
+
+	if (argc == 1)
+	        dp.reset(new DynamicParallelism());
+	else
+		dp.reset(new DynamicParallelism(atoi(argv[1])));
 
         printf("Running...\n");
 
