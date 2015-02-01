@@ -107,7 +107,7 @@ int main( int argc, char* argv[] )
     clFinish(queue);
  
     // Read the results from the device
-    clEnqueueSVMMap(queue, CL_TRUE, CL_MEM_READ_ONLY, h_c, bytes, 0, NULL, NULL);
+    clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ, h_c, bytes, 0, NULL, NULL);
  
     //Sum up vector c and print result divided by n, this should equal 1 within error
     double sum = 0;
