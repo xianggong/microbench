@@ -1,6 +1,16 @@
 #include "dp.h"
 
+#include <sys/time.h>
 #include <memory>
+
+double time_stamp()
+{
+        struct timeval t;
+        if(gettimeofday(&t, 0) != 0)
+        	exit(-1);
+        return t.tv_sec + t.tv_usec/1e6;
+}
+
 
 DynamicParallelism::DynamicParallelism(int N)
 {
@@ -119,6 +129,7 @@ void DynamicParallelism::runNaive()
         err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 4, saxpy_dst_0);
         checkOpenCLErrors(err, "Failed to set args in saxpy_naive kernel");
 
+        double start = time_stamp();
         err = clEnqueueNDRangeKernel(
                 cmdQueue,
                 kernel_saxpy_naive,
@@ -126,7 +137,9 @@ void DynamicParallelism::runNaive()
                 0, globalSize, localSize,
                 0, 0, 0
         );
+        double end = time_stamp();
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
+        printf("runNaive takes %f\n", end - start);
 }
 
 void DynamicParallelism::runStride()
@@ -147,6 +160,7 @@ void DynamicParallelism::runStride()
         err |= clSetKernelArgSVMPointer(kernel_saxpy_stride, 4, saxpy_dst_0);
         checkOpenCLErrors(err, "Failed to set args in saxpy_naive kernel");
 
+        double start = time_stamp();
         err = clEnqueueNDRangeKernel(
                 cmdQueue,
                 kernel_saxpy_stride,
@@ -154,7 +168,9 @@ void DynamicParallelism::runStride()
                 0, globalSize, localSize,
                 0, 0, 0
         );
+        double end = time_stamp();
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
+        printf("runStride takes %f\n", end - start);
 
         // Map SVM buffers 
         size_t glbSizeBytes = glbSize * sizeof(float);        
@@ -162,7 +178,7 @@ void DynamicParallelism::runStride()
         checkOpenCLErrors(err, "Failed to map SVM buffers for checking result");
 
         // Check result
-        for (int i = 0; i < glbSize / locSize; ++i)
+        for (int i = 0; i < glbSize; i += locSize)
         printf("%f\n", saxpy_dst_0[i]);
 
         // Unmap SVM buffers
