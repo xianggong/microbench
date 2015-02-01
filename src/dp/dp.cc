@@ -140,16 +140,16 @@ void DynamicParallelism::runStride()
         size_t globalSize[1] = {(size_t) numCU * 64};
         size_t localSize[1]  = {(size_t)locSize};
 
-        err  = clSetKernelArg(kernel_saxpy_naive, 0, sizeof(int), (void *)&glbSize);
-        err |= clSetKernelArg(kernel_saxpy_naive, 1, sizeof(int), (void *)&factor);
-        err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 2, saxpy_src_0);
-        err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 3, saxpy_src_1);
-        err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 4, saxpy_dst_0);
+        err  = clSetKernelArg(kernel_saxpy_stride, 0, sizeof(int), (void *)&glbSize);
+        err |= clSetKernelArg(kernel_saxpy_stride, 1, sizeof(int), (void *)&factor);
+        err |= clSetKernelArgSVMPointer(kernel_saxpy_stride, 2, saxpy_src_0);
+        err |= clSetKernelArgSVMPointer(kernel_saxpy_stride, 3, saxpy_src_1);
+        err |= clSetKernelArgSVMPointer(kernel_saxpy_stride, 4, saxpy_dst_0);
         checkOpenCLErrors(err, "Failed to set args in saxpy_naive kernel");
 
         err = clEnqueueNDRangeKernel(
                 cmdQueue,
-                kernel_saxpy_naive,
+                kernel_saxpy_stride,
                 1,
                 0, globalSize, localSize,
                 0, 0, 0
@@ -168,7 +168,6 @@ void DynamicParallelism::runStride()
         // Unmap SVM buffers
         err  = clEnqueueSVMUnmap(cmdQueue, saxpy_dst_0, 0, NULL, NULL);
         checkOpenCLErrors(err, "Failed to unmap SVM buffers after checking result");
-
 
 }
 
