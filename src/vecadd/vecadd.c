@@ -91,6 +91,8 @@ int main( int argc, char* argv[] )
     clEnqueueSVMUnmap(queue, h_a, 0, NULL, NULL);
     clEnqueueSVMUnmap(queue, h_b, 0, NULL, NULL);
 
+    clFinish(queue);
+
     // Set the arguments to our compute kernel
     err  = clSetKernelArgSVMPointer(kernel, 0, h_a);
     err |= clSetKernelArgSVMPointer(kernel, 1, h_b);
