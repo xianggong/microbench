@@ -75,20 +75,6 @@ void DynamicParallelism::initBuffer()
 	err = clFlush(cmdQueue);
 	checkOpenCLErrors(err, "Failed to clFlush cmdQueue");
 
-	// Map SVM buffers 
-	err  = clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MEM_READ_WRITE, saxpy_src_0, glbSizeBytes, 0, NULL, NULL);
-	err |= clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MEM_READ_WRITE, saxpy_src_1, glbSizeBytes, 0, NULL, NULL);
-	checkOpenCLErrors(err, "Failed to map SVM buffers for initialization");
-
-	// Initialize buffers
-	for (int i = 0; i < glbSize; ++i)
-		printf("%f %f\n", saxpy_src_0[i], saxpy_src_1[i]);
-
-	// Unmap SVM buffers
-	err  = clEnqueueSVMUnmap(cmdQueue, saxpy_src_0, 0, NULL, NULL);
-	err |= clEnqueueSVMUnmap(cmdQueue, saxpy_src_1, 0, NULL, NULL);
-	checkOpenCLErrors(err, "Failed to unmap SVM buffers after initialization");
-
 }
 
 void DynamicParallelism::clean()
@@ -121,8 +107,8 @@ void DynamicParallelism::runNaive()
 {
 	cl_int err;
 	
-	size_t globalSize = glbSize;
-	size_t localSize  = locSize;
+	size_t globalSize[1] = {(size_t)glbSize};
+	size_t localSize[1]  = {(size_t)locSize};
 
 	err  = clSetKernelArg(kernel_saxpy_naive, 0, sizeof(int), (void *)&glbSize);
 	err |= clSetKernelArg(kernel_saxpy_naive, 1, sizeof(int), (void *)&factor);
@@ -135,7 +121,7 @@ void DynamicParallelism::runNaive()
                 cmdQueue,
                 kernel_saxpy_naive,
                 1,
-                0, &globalSize, &localSize,
+                0, globalSize, localSize,
                 0, 0, 0
         );
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
