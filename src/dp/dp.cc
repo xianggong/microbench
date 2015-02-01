@@ -65,11 +65,14 @@ void DynamicParallelism::initBuffer()
 	saxpy_src_1 = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY, glbSizeBytes, 0);
 	saxpy_dst_0 = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, glbSizeBytes, 0);
 
+	float one = 1.0f;
 	float two = 2.0f;
 	float three = 3.0f;
 
-	err  = clEnqueueSVMMemFill(cmdQueue, saxpy_src_0, (const void *)&two, sizeof(float), glbSizeBytes, 0, NULL, NULL);
-	err |= clEnqueueSVMMemFill(cmdQueue, saxpy_src_1, (const void *)&three, sizeof(float), glbSizeBytes, 0, NULL, NULL);
+
+	err  = clEnqueueSVMMemFill(cmdQueue, saxpy_src_0, (const void *)&one, sizeof(float), glbSizeBytes, 0, NULL, NULL);
+	err  = clEnqueueSVMMemFill(cmdQueue, saxpy_src_1, (const void *)&two, sizeof(float), glbSizeBytes, 0, NULL, NULL);
+	err |= clEnqueueSVMMemFill(cmdQueue, saxpy_dst_0, (const void *)&three, sizeof(float), glbSizeBytes, 0, NULL, NULL);
 	checkOpenCLErrors(err, "Failed to fill SVM buffers");
 
 	err = clFlush(cmdQueue);
