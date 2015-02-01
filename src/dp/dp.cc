@@ -76,8 +76,8 @@ void DynamicParallelism::initBuffer()
 	checkOpenCLErrors(err, "Failed to clFlush cmdQueue");
 
 	// Map SVM buffers 
-	err  = clEnqueueSVMMap(cmdQueue, true, CL_MEM_READ_WRITE, saxpy_src_0, glbSizeBytes, 0, NULL, NULL);
-	err |= clEnqueueSVMMap(cmdQueue, true, CL_MEM_READ_WRITE, saxpy_src_1, glbSizeBytes, 0, NULL, NULL);
+	err  = clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MEM_READ_WRITE, saxpy_src_0, glbSizeBytes, 0, NULL, NULL);
+	err |= clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MEM_READ_WRITE, saxpy_src_1, glbSizeBytes, 0, NULL, NULL);
 	checkOpenCLErrors(err, "Failed to map SVM buffers for initialization");
 
 	// Initialize buffers
@@ -142,7 +142,7 @@ void DynamicParallelism::runNaive()
 
 	// Map SVM buffers 
 	size_t glbSizeBytes = glbSize * sizeof(float);	
-	err  = clEnqueueSVMMap(cmdQueue, true, CL_MEM_READ_ONLY, saxpy_dst_0, glbSizeBytes, 0, NULL, NULL);
+	err  = clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MEM_READ_ONLY, saxpy_dst_0, glbSizeBytes, 0, NULL, NULL);
 	checkOpenCLErrors(err, "Failed to map SVM buffers for checking result");
 
 	// Check result
