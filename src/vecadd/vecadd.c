@@ -77,8 +77,8 @@ int main( int argc, char* argv[] )
     h_b = (double*)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes, 0);
     h_c = (double*)clSVMAlloc(context, CL_MEM_READ_WRITE, bytes, 0);
  
-    clEnqueueSVMMap(queue, CL_TRUE, CL_MEM_WRITE_ONLY, h_a, bytes, 0, NULL, NULL);
-    clEnqueueSVMMap(queue, CL_TRUE, CL_MEM_WRITE_ONLY, h_b, bytes, 0, NULL, NULL);
+    clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, h_a, bytes, 0, NULL, NULL);
+    clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, h_b, bytes, 0, NULL, NULL);
 
     // Initialize vectors on host
     int i;
