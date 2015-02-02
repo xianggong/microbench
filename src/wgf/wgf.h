@@ -35,6 +35,7 @@ public:
 	~WorkGroupFunc();
 
 	void Run();
+	void Dump();
 	
 };
 

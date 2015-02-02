@@ -118,11 +118,21 @@ void WorkGroupFunc::Run()
         printf("Run takes %f\n", end - start);
 }
 
+void WorkGroupFunc::Dump()
+{
+	cl_int err;
+
+	clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MAP_READ, dst_0, numElemsBytes, 0, NULL, NULL);
+	for (int i = 0; i < numElems; ++i)
+		printf("%d\n", dst_0[i]);
+}
+
 int main(int argc, char const *argv[])
 {
 	std::unique_ptr<WorkGroupFunc> wgf(new WorkGroupFunc());
 	
 	wgf->Run();
+	wgf->Dump();
 
 	return 0;
 }
