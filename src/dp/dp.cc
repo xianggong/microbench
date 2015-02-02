@@ -67,7 +67,6 @@ void DynamicParallelism::initKernel()
                                 NULL);
         printf("\n%s\n", buf);
 
-
         // Create kernels
         kernel_saxpy_naive = clCreateKernel(program, "saxpy_naive", &err);
         checkOpenCLErrors(err, "Failed to create saxpy_naive kernel");
