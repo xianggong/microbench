@@ -55,17 +55,19 @@ void DynamicParallelism::initKernel()
 
         // Create program with OpenCL 2.0 support
         err = clBuildProgram(program, 0, NULL, "-cl-std=CL2.0", NULL, NULL);
-        checkOpenCLErrors(err, "Failed to build program...\n");
-
-        // Debug
-        char buf[0x10000];
-        clGetProgramBuildInfo( program,
-                                device,
-                                CL_PROGRAM_BUILD_LOG,
-                                0x10000,
-                                buf,
-                                NULL);
-        printf("\n%s\n", buf);
+        if (err != CL_SUCCESS)
+        {
+                // Debug
+                char buf[0x10000];
+                clGetProgramBuildInfo( program,
+                                        device,
+                                        CL_PROGRAM_BUILD_LOG,
+                                        0x10000,
+                                        buf,
+                                        NULL);
+                printf("%s\n", buf);
+                exit(-1);
+        }
 
         // Create kernels
         kernel_saxpy_naive = clCreateKernel(program, "saxpy_naive", &err);
