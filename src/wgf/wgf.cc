@@ -20,11 +20,15 @@ WorkGroupFunc::WorkGroupFunc()
 	device   = runtime->getDevice();
 	context  = runtime->getContext();
 	cmdQueue = runtime->getCmdQueue(0);
+
+	InitKernel();
+	InitBuffer();
 }
 
 WorkGroupFunc::~WorkGroupFunc()
 {
-
+	FreeBuffer();
+	FreeKernel();
 }
 
 void WorkGroupFunc::InitKernel()
@@ -87,7 +91,7 @@ void WorkGroupFunc::Run()
 
         err  = clSetKernelArgSVMPointer(kernel_wgf_reduce, 0, src_0);
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 1, dst_0);
-        checkOpenCLErrors(err, "Failed to set args in saxpy_naive kernel");
+        checkOpenCLErrors(err, "Failed to set args in kernel_wgf_reduce");
 
         double start = time_stamp();
         err = clEnqueueNDRangeKernel(
