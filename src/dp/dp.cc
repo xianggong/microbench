@@ -187,8 +187,8 @@ void DynamicParallelism::runDP()
 {
         cl_int err;
         
-        size_t globalSize[1] = {(size_t)glbSize};
-        size_t localSize[1]  = {(size_t)locSize};
+        size_t globalSize[1] = {(size_t)512};
+        size_t localSize[1]  = {(size_t)256};
 
         err  = clSetKernelArg(kernel_saxpy_dp, 0, sizeof(int), (void *)&glbSize);
         err |= clSetKernelArg(kernel_saxpy_dp, 1, sizeof(int), (void *)&factor);
