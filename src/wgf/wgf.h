@@ -16,15 +16,25 @@ class WorkGroupFunc
 	cl_command_queue cmdQueue;
 
 	cl_program       program;
-	cl_kernel        kernel;
+	cl_kernel        kernel_wgf_reduce;
+
+	static const int numElems = 65536;
+	static const size_t numElemsBytes = numElems * sizeof(int);
+
+	int *src_0;
+	int *dst_0;
+
+	void InitKernel();
+	void InitBuffer();
+
+	void FreeKernel();
+	void FreeBuffer();
 
 public:
 	WorkGroupFunc();
 	~WorkGroupFunc();
 
-	void InitKernel();
-	void InitBuffer();
-
+	void Run();
 	
 };
 
