@@ -57,6 +57,17 @@ void DynamicParallelism::initKernel()
         err = clBuildProgram(program, 0, NULL, "-cl-std=CL2.0", NULL, NULL);
         checkOpenCLErrors(err, "Failed to build program...\n");
 
+        // Debug
+        char buf[0x10000];
+        clGetProgramBuildInfo( program,
+                                device,
+                                CL_PROGRAM_BUILD_LOG,
+                                0x10000,
+                                buf,
+                                NULL);
+        printf("\n%s\n", buf);
+
+
         // Create kernels
         kernel_saxpy_naive = clCreateKernel(program, "saxpy_naive", &err);
         checkOpenCLErrors(err, "Failed to create saxpy_naive kernel");
