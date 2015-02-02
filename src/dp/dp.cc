@@ -175,6 +175,29 @@ void DynamicParallelism::runStride()
 
 void DynamicParallelism::runDP()
 {
+        cl_int err;
+        
+        size_t globalSize[1] = {(size_t)glbSize};
+        size_t localSize[1]  = {(size_t)locSize};
+
+        err  = clSetKernelArg(kernel_saxpy_dp, 0, sizeof(int), (void *)&glbSize);
+        err |= clSetKernelArg(kernel_saxpy_dp, 1, sizeof(int), (void *)&factor);
+        err |= clSetKernelArgSVMPointer(kernel_saxpy_dp, 2, saxpy_src_0);
+        err |= clSetKernelArgSVMPointer(kernel_saxpy_dp, 3, saxpy_src_1);
+        err |= clSetKernelArgSVMPointer(kernel_saxpy_dp, 4, saxpy_dst_0);
+        checkOpenCLErrors(err, "Failed to set args in saxpy_naive kernel");
+
+        double start = time_stamp();
+        err = clEnqueueNDRangeKernel(
+                cmdQueue,
+                kernel_saxpy_dp,
+                1,
+                0, globalSize, localSize,
+                0, 0, 0
+        );
+        double end = time_stamp();
+        checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
+        printf("runDP takes %f\n", end - start);
         
 }
 
@@ -189,7 +212,7 @@ int main(int argc, char const *argv[])
 	}
 
 	if (argc == 1)
-	        dp.reset(new DynamicParallelism());
+	        dp.reset(new DynamicParallelism(8192));
 	else
 		dp.reset(new DynamicParallelism(atoi(argv[1])));
 
