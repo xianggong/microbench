@@ -46,7 +46,19 @@ void WorkGroupFunc::InitKernel()
 
         // Create program with OpenCL 2.0 support
         err = clBuildProgram(program, 0, NULL, "-cl-std=CL2.0", NULL, NULL);
-        checkOpenCLErrors(err, "Failed to build program...\n");
+        if (err != CL_SUCCESS)
+        {
+                // Debug
+                char buf[0x10000];
+                clGetProgramBuildInfo( program,
+                                        device,
+                                        CL_PROGRAM_BUILD_LOG,
+                                        0x10000,
+                                        buf,
+                                        NULL);
+                printf("%s\n", buf);
+                exit(-1);
+        }
 
         // Create kernel
         kernel_wgf_reduce = clCreateKernel(program, "wgf_reduce", &err);
