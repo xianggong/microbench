@@ -169,8 +169,8 @@ void WorkGroupFunc::RunAtomic()
         int N = numElems;
 
         err  = clSetKernelArg(kernel_wgf_reduce_atomic, 0, sizeof(int), (void *)&N);
-        err |= clSetKernelArgSVMPointer(kernel_wgf_reduce_atomic, 1, src_0);
-        err |= clSetKernelArgSVMPointer(kernel_wgf_reduce_atomic, 2, dst_0);
+        err |= clSetKernelArgSVMPointer(kernel_wgf_reduce_atomic, 1, src_1);
+        err |= clSetKernelArgSVMPointer(kernel_wgf_reduce_atomic, 2, dst_1);
         checkOpenCLErrors(err, "Failed to set args in kernel_wgf_reduce");
 
         double start_0 = time_stamp();
