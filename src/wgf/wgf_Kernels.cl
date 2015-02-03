@@ -13,5 +13,4 @@ __kernel void wgf_reduce(         const int  numElems,
 
 	if (get_local_id(0) == 0)
 		dst[get_group_id(0)] = sum;
-
 }
