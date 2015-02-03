@@ -151,7 +151,7 @@ void WorkGroupFunc::Dump(int *svm_ptr, int N)
 
 	clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MAP_READ, svm_ptr, sizeof(int) * N, 0, NULL, NULL);
 	for (int i = 0; i < N; ++i)
-		std::cout << dst_0[i];
+		std::cout << dst_0[i] << std::endl;
 }
 
 int main(int argc, char const *argv[])
