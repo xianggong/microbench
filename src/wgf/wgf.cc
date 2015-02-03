@@ -99,11 +99,15 @@ void WorkGroupFunc::Run()
 {
 	cl_int err;
 
-	size_t globalSize = numElems;
-	size_t localSize  = 256;
+	size_t globalSize_0 = std::min((numElems + 255)/256, 1024);
+	size_t localSize_0  = 256;
+        size_t globalSize_1 = 1024;
+        size_t localSize_1  = 1024;
+        int N = numElems;
 
-        err  = clSetKernelArgSVMPointer(kernel_wgf_reduce, 0, src_0);
-        err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 1, dst_0);
+        err  = clSetKernelArg(kernel_wgf_reduce, 0, sizeof(int), (void *)&N);
+        err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 1, src_0);
+        err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 2, dst_0);
         checkOpenCLErrors(err, "Failed to set args in kernel_wgf_reduce");
 
         double start = time_stamp();
@@ -111,12 +115,30 @@ void WorkGroupFunc::Run()
                 cmdQueue,
                 kernel_wgf_reduce,
                 1,
-                0, &globalSize, &localSize,
+                0, &globalSize_0, &localSize_0,
                 0, 0, 0
         );
         double end = time_stamp();
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
-        printf("Run takes %f\n", end - start);
+        printf("Pass 0 takes %f\n", end - start);
+
+        err  = clSetKernelArg(kernel_wgf_reduce, 0, sizeof(int), (void *)&N);
+        err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 1, dst_0);
+        err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 2, dst_0);
+        checkOpenCLErrors(err, "Failed to set args in kernel_wgf_reduce");
+
+        start = time_stamp();
+        err = clEnqueueNDRangeKernel(
+                cmdQueue,
+                kernel_wgf_reduce,
+                1,
+                0, &globalSize_1, &localSize_1,
+                0, 0, 0
+        );
+        end = time_stamp();
+        checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");     
+        printf("Pass 1 takes %f\n", end - start);
+
 }
 
 void WorkGroupFunc::Dump()
