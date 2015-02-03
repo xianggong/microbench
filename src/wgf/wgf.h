@@ -17,12 +17,15 @@ class WorkGroupFunc
 
 	cl_program       program;
 	cl_kernel        kernel_wgf_reduce;
+	cl_kernel        kernel_wgf_reduce_atomic;
 
 	int numElems;
 	size_t numElemsBytes;
 
 	int *src_0;
 	int *dst_0;
+	int *src_1;
+	int *dst_1;
 
 	void InitKernel();
 	void InitBuffer();
@@ -34,7 +37,8 @@ public:
 	explicit WorkGroupFunc(int N);
 	~WorkGroupFunc();
 
-	void Run();
+	void Run2Pass();
+	void RunAtomic();
 	void Dump(int *svm_ptr, int numElems);
 	
 };
