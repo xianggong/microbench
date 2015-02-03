@@ -122,6 +122,8 @@ void WorkGroupFunc::Run()
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
         printf("Pass 0 takes %f\n", end - start);
 
+        Dump();
+
         err  = clSetKernelArg(kernel_wgf_reduce, 0, sizeof(int), (void *)&N);
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 1, dst_0);
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 2, dst_0);
@@ -139,6 +141,7 @@ void WorkGroupFunc::Run()
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");     
         printf("Pass 1 takes %f\n", end - start);
 
+        Dump();
 }
 
 void WorkGroupFunc::Dump()
