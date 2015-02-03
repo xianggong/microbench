@@ -126,7 +126,8 @@ void WorkGroupFunc::Run()
 
         Dump();
 
-        err  = clSetKernelArg(kernel_wgf_reduce, 0, sizeof(int), (void *)&N);
+        int numblocks = (int)(globalSize_1 / localSize_1);
+        err  = clSetKernelArg(kernel_wgf_reduce, 0, sizeof(int), (void *)&numblocks);
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 1, dst_0);
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 2, dst_0);
         checkOpenCLErrors(err, "Failed to set args in kernel_wgf_reduce");

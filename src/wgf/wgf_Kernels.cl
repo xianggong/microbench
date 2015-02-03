@@ -5,7 +5,7 @@ __kernel void wgf_reduce(         const int  numElems,
 	uint global_id = get_global_id(0);
 
 	// Reduce multiple elements per workitem
-	int sum;
+	int sum = 0;
 	for (int i = global_id; i < numElems; i += get_global_size(0))
 		sum += src[i];
 
