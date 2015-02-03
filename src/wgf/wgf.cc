@@ -141,15 +141,17 @@ void WorkGroupFunc::Run()
         end = time_stamp();
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");     
         printf("Pass 1 takes %f\n", end - start);
+
+        Dump(dst_0, 256);
 }
 
-void WorkGroupFunc::Dump()
+void WorkGroupFunc::Dump(int *svm_ptr, int N)
 {
 	cl_int err;
 
-	clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MAP_READ, dst_0, numElemsBytes, 0, NULL, NULL);
-	for (int i = 0; i < numElems; ++i)
-		printf("%d\n", dst_0[i]);
+	clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MAP_READ, svm_ptr, sizeof(int) * N, 0, NULL, NULL);
+	for (int i = 0; i < N; ++i)
+		std::cout << dst_0[i];
 }
 
 int main(int argc, char const *argv[])
@@ -157,7 +159,6 @@ int main(int argc, char const *argv[])
 	std::unique_ptr<WorkGroupFunc> wgf(new WorkGroupFunc());
 	
 	wgf->Run();
-	wgf->Dump();
 
 	return 0;
 }

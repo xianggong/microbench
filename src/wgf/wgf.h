@@ -35,7 +35,7 @@ public:
 	~WorkGroupFunc();
 
 	void Run();
-	void Dump();
+	void Dump(int *svm_ptr, int numElems);
 	
 };
 
