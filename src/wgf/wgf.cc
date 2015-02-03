@@ -206,7 +206,7 @@ int main(int argc, char const *argv[])
                 exit(-1);
         }
 
-        std::unique_ptr<WorkGroupFunc> wgf(new WorkGroupFunc(atoi(argv[2])));
+        std::unique_ptr<WorkGroupFunc> wgf(new WorkGroupFunc(atoi(argv[1])));
 	
 	wgf->Run2Pass();
         wgf->RunAtomic();
