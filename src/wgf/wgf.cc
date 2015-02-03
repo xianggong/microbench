@@ -1,5 +1,6 @@
 #include "wgf.h"
 
+#include <math.h>
 #include <sys/time.h>
 #include <memory>
 
@@ -99,7 +100,7 @@ void WorkGroupFunc::Run()
 {
 	cl_int err;
 
-	size_t globalSize_0 = std::min((numElems + 255)/256, 1024);
+	size_t globalSize_0 = std::min(int(ceil(numElems/256) * 256), 1024);
 	size_t localSize_0  = 256;
         size_t globalSize_1 = 256;
         size_t localSize_1  = 256;
