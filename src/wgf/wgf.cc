@@ -72,9 +72,9 @@ void WorkGroupFunc::InitBuffer()
 	src_0 = (int *)clSVMAlloc(context, CL_MEM_READ_ONLY, numElemsBytes, 0);
 	dst_0 = (int *)clSVMAlloc(context, CL_MEM_WRITE_ONLY, numElemsBytes, 0);
 
-        float one = 1.0f;
-        err  = clEnqueueSVMMemFill(cmdQueue, src_0, (const void *)&one, sizeof(float), numElemsBytes, 0, NULL, NULL);
-        err |= clEnqueueSVMMemFill(cmdQueue, dst_0, (const void *)&one, sizeof(float), numElemsBytes, 0, NULL, NULL);
+        int one = 1;
+        err  = clEnqueueSVMMemFill(cmdQueue, src_0, (const void *)&one, sizeof(int), numElemsBytes, 0, NULL, NULL);
+        err |= clEnqueueSVMMemFill(cmdQueue, dst_0, (const void *)&one, sizeof(int), numElemsBytes, 0, NULL, NULL);
         checkOpenCLErrors(err, "Failed to clEnqueueSVMMemFill src_0");
 }
 
