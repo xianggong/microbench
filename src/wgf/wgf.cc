@@ -124,7 +124,8 @@ void WorkGroupFunc::Run()
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
         printf("Pass 0 takes %f\n", end - start);
 
-        err  = clSetKernelArg(kernel_wgf_reduce, 0, sizeof(int), (void *)&localSize_1);
+        int numWG = globalSize_0 / localSize_0;
+        err  = clSetKernelArg(kernel_wgf_reduce, 0, sizeof(int), (void *)&numWG);
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 1, dst_0);
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 2, dst_0);
         checkOpenCLErrors(err, "Failed to set args in kernel_wgf_reduce");
@@ -141,7 +142,8 @@ void WorkGroupFunc::Run()
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");     
         printf("Pass 1 takes %f\n", end - start);
 
-        Dump(dst_0, 256);
+        // Reduction result
+        Dump(dst_0, 1);
 }
 
 void WorkGroupFunc::Dump(int *svm_ptr, int N)
