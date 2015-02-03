@@ -103,8 +103,8 @@ void WorkGroupFunc::Run()
 
 	size_t globalSize_0 = std::min(int(ceil(numElems/256) * 256), 1024);
 	size_t localSize_0  = 256;
-        size_t globalSize_1 = 256;
-        size_t localSize_1  = 256;
+        size_t globalSize_1 = globalSize_0 / localSize_0;
+        size_t localSize_1  = std::min((int)globalSize_1, 256);
         int N = numElems;
 
         err  = clSetKernelArg(kernel_wgf_reduce, 0, sizeof(int), (void *)&N);
@@ -124,8 +124,6 @@ void WorkGroupFunc::Run()
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
         printf("Pass 0 takes %f\n", end - start);
 
-        Dump();
-
         int numblocks = (int)(globalSize_1 / localSize_1);
         err  = clSetKernelArg(kernel_wgf_reduce, 0, sizeof(int), (void *)&numblocks);
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 1, dst_0);
@@ -143,8 +141,6 @@ void WorkGroupFunc::Run()
         end = time_stamp();
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");     
         printf("Pass 1 takes %f\n", end - start);
-
-        Dump();
 }
 
 void WorkGroupFunc::Dump()
