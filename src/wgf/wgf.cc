@@ -74,6 +74,7 @@ void WorkGroupFunc::InitBuffer()
 
         float one = 1.0f;
         err  = clEnqueueSVMMemFill(cmdQueue, src_0, (const void *)&one, sizeof(float), numElemsBytes, 0, NULL, NULL);
+        err |= clEnqueueSVMMemFill(cmdQueue, dst_0, (const void *)&one, sizeof(float), numElemsBytes, 0, NULL, NULL);
         checkOpenCLErrors(err, "Failed to clEnqueueSVMMemFill src_0");
 }
 
