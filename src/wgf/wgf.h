@@ -18,7 +18,7 @@ class WorkGroupFunc
 	cl_program       program;
 	cl_kernel        kernel_wgf_reduce;
 
-	static const int numElems = 65536;
+	static const int numElems = 1024;
 	static const size_t numElemsBytes = numElems * sizeof(int);
 
 	int *src_0;
