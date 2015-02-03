@@ -101,8 +101,8 @@ void WorkGroupFunc::Run()
 
 	size_t globalSize_0 = std::min((numElems + 255)/256, 1024);
 	size_t localSize_0  = 256;
-        size_t globalSize_1 = 1024;
-        size_t localSize_1  = 1024;
+        size_t globalSize_1 = 256;
+        size_t localSize_1  = 256;
         int N = numElems;
 
         err  = clSetKernelArg(kernel_wgf_reduce, 0, sizeof(int), (void *)&N);
