@@ -6,7 +6,7 @@ __kernel void wgf_reduce(         const int  numElems,
 
 	// Reduce multiple elements per workitem
 	int sum;
-	for (int i = global_id; i < N; i += get_global_size(0))
+	for (int i = global_id; i < numElems; i += get_global_size(0))
 		sum += src[i];
 
 	sum = work_group_reduce_add(sum);
