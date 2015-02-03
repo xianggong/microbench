@@ -12,7 +12,7 @@ double time_stamp()
         return t.tv_sec + t.tv_usec/1e6;
 }
 
-WorkGroupFunc::WorkGroupFunc()
+WorkGroupFunc::WorkGroupFunc(int N)
 {
 	runtime  = clRuntime::getInstance();
 	file     = clFile::getInstance();
@@ -21,6 +21,9 @@ WorkGroupFunc::WorkGroupFunc()
 	device   = runtime->getDevice();
 	context  = runtime->getContext();
 	cmdQueue = runtime->getCmdQueue(0);
+
+        numElems = N;
+        numElemsBytes = numElems * sizeof(int);
 
 	InitKernel();
 	InitBuffer();
@@ -157,7 +160,13 @@ void WorkGroupFunc::Dump(int *svm_ptr, int N)
 
 int main(int argc, char const *argv[])
 {
-	std::unique_ptr<WorkGroupFunc> wgf(new WorkGroupFunc());
+        if (argc != 2)
+        {
+                printf("wgf #elements\n");
+                exit(-1);
+        }
+
+        std::unique_ptr<WorkGroupFunc> wgf(new WorkGroupFunc(atoi(argv[2])));
 	
 	wgf->Run();
 

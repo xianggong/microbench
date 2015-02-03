@@ -18,8 +18,8 @@ class WorkGroupFunc
 	cl_program       program;
 	cl_kernel        kernel_wgf_reduce;
 
-	static const int numElems = 1024;
-	static const size_t numElemsBytes = numElems * sizeof(int);
+	int numElems;
+	size_t numElemsBytes;
 
 	int *src_0;
 	int *dst_0;
@@ -31,7 +31,7 @@ class WorkGroupFunc
 	void FreeBuffer();
 
 public:
-	WorkGroupFunc();
+	explicit WorkGroupFunc(int N);
 	~WorkGroupFunc();
 
 	void Run();
