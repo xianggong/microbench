@@ -125,17 +125,14 @@ void WorkGroupFunc::Run2Pass()
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 2, dst_0);
         checkOpenCLErrors(err, "Failed to set args in kernel_wgf_reduce");
 
-        double start_0 = time_stamp();
-        err = clEnqueueNDRangeKernel(
+        err = clProfileNDRangeKernel(
                 cmdQueue,
                 kernel_wgf_reduce,
                 1,
                 0, &globalSize_0, &localSize_0,
                 0, 0, 0
         );
-        double end_0 = time_stamp();
-        checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
-        printf("Pass 0 takes %f\n", end_0 - start_0);
+        checkOpenCLErrors(err, "Failed at clProfileNDRangeKernel");
 
         int numWG = globalSize_0 / localSize_0;
         err  = clSetKernelArg(kernel_wgf_reduce, 0, sizeof(int), (void *)&numWG);
@@ -143,18 +140,14 @@ void WorkGroupFunc::Run2Pass()
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 2, dst_0);
         checkOpenCLErrors(err, "Failed to set args in kernel_wgf_reduce");
 
-        double start_1 = time_stamp();
-        err = clEnqueueNDRangeKernel(
+        err = clProfileNDRangeKernel(
                 cmdQueue,
                 kernel_wgf_reduce,
                 1,
                 0, &globalSize_1, &localSize_1,
                 0, 0, 0
         );
-        double end_1 = time_stamp();
-        checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");     
-        printf("Pass 1 takes %f\n", end_1 - start_1);
-        printf("Run2Pass takes %f\n", end_0 - start_0 + end_1 - start_1);
+        checkOpenCLErrors(err, "Failed at clProfileNDRangeKernel");     
 
         // Reduction result
         Dump(dst_0, 1);
@@ -173,17 +166,14 @@ void WorkGroupFunc::RunAtomic()
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce_atomic, 2, dst_1);
         checkOpenCLErrors(err, "Failed to set args in kernel_wgf_reduce");
 
-        double start_0 = time_stamp();
-        err = clEnqueueNDRangeKernel(
+        err = clProfileNDRangeKernel(
                 cmdQueue,
                 kernel_wgf_reduce_atomic,
                 1,
                 0, &globalSize_0, &localSize_0,
                 0, 0, 0
         );
-        double end_0 = time_stamp();
-        checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
-        printf("RunAtomic takes %f\n", end_0 - start_0);
+        checkOpenCLErrors(err, "Failed at clProfileNDRangeKernel");
 
         // Reduction result
         Dump(dst_1, 1);
@@ -196,6 +186,7 @@ void WorkGroupFunc::Dump(int *svm_ptr, int N)
 	clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MAP_READ, svm_ptr, sizeof(int) * N, 0, NULL, NULL);
 	for (int i = 0; i < N; ++i)
 		std::cout << dst_0[i] << std::endl;
+        clEnqueueSVMUnmap(cmdQueue, svm_ptr, 0, NULL, NULL);
 }
 
 int main(int argc, char const *argv[])

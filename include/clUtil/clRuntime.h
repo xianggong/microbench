@@ -60,7 +60,7 @@ public:
         cl_context const getContext() { return context; }
 
         // Get a command queue by index, create it if doesn't exist
-        cl_command_queue getCmdQueue(int index);
+        cl_command_queue getCmdQueue(int index, cl_command_queue_properties cmdQProp = 0);
 
         // Device SVM support
         bool isSVMavail(enum clSVMLevel level);
@@ -235,7 +235,7 @@ int clRuntime::displayAllInfo()
         displayDeviceInfo();
 }
 
-cl_command_queue clRuntime::getCmdQueue(int index)
+cl_command_queue clRuntime::getCmdQueue(int index, cl_command_queue_properties cmdQProp)
 {
         cl_int err;
 
@@ -243,7 +243,7 @@ cl_command_queue clRuntime::getCmdQueue(int index)
                 return cmdQueueRepo[index];
         else
         {
-                cl_command_queue cmdQ = clCreateCommandQueueWithProperties(context, device, 0, &err);
+                cl_command_queue cmdQ = clCreateCommandQueueWithProperties(context, device, &cmdQProp, &err);
                 checkOpenCLErrors(err, "Failed at clCreateCommandQueueWithProperties");
                 cmdQueueRepo.push_back(cmdQ);
                 return cmdQ;
