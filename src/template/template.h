@@ -5,6 +5,7 @@
 
 using namespace clHelper;
 
+template <typename T>
 class Template
 {
 	clRuntime *runtime;
@@ -25,6 +26,8 @@ public:
 	void InitKernel();
 	void InitBuffer();
 
+	void FreeKernel();
+	void FreeBuffer();
 	
 };
 

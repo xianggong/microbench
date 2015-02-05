@@ -2,7 +2,8 @@
 
 #include <memory>
 
-Template::Template()
+template <typename T>
+Template<T>::Template()
 {
 	runtime  = clRuntime::getInstance();
 	file     = clFile::getInstance();
@@ -13,12 +14,14 @@ Template::Template()
 	cmdQueue = runtime->getCmdQueue(0);
 }
 
-Template::~Template()
+template <typename T>
+Template<T>::~Template()
 {
 
 }
 
-void Template::InitKernel()
+template <typename T>
+void Template<T>::InitKernel()
 {
 	cl_int err;
 
@@ -36,11 +39,27 @@ void Template::InitKernel()
         checkOpenCLErrors(err, "Failed to build program...\n");
 }
 
+template <typename T>
+void Template<T>::InitBuffer()
+{
 
+}
+
+template <typename T>
+void Template<T>::FreeKernel()
+{
+	
+}
+
+template <typename T>
+void Template<T>::FreeBuffer()
+{
+	
+}
 
 int main(int argc, char const *argv[])
 {
-	std::unique_ptr<Template> tp(new Template());
+	std::unique_ptr<Template<float>> tp(new Template<float>());
 	
 	return 0;
 }

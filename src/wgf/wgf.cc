@@ -86,7 +86,7 @@ void WorkGroupFunc::InitBuffer()
         err |= clEnqueueSVMMemFill(cmdQueue, dst_0, (const void *)&zero, sizeof(int), numElemsBytes, 0, NULL, NULL);
         err |= clEnqueueSVMMemFill(cmdQueue, src_1, (const void *)&one, sizeof(int), numElemsBytes, 0, NULL, NULL);
         err |= clEnqueueSVMMemFill(cmdQueue, dst_1, (const void *)&zero, sizeof(int), numElemsBytes, 0, NULL, NULL);
-        checkOpenCLErrors(err, "Failed to clEnqueueSVMMemFill src_0");
+        checkOpenCLErrors(err, "Failed to clEnqueueSVMMemFill");
 }
 
 void WorkGroupFunc::FreeKernel()
