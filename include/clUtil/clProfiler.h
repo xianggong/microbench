@@ -2,10 +2,101 @@
 #define CL_PROFILER_H
 
 #include <sys/time.h>
+#include <map>
 #include <memory>
 
 namespace clHelper
 {
+
+class clProfiler
+{
+        // Instance of the singleton
+        static std::unique_ptr<clProfiler> instance;
+
+        // Private constructor for singleton
+        clProfiler();
+
+        // Contains profiling data
+        std::map<std::string, double> profilingData;
+
+        // String length
+        size_t strLen;
+
+public:
+
+        ~clProfiler();
+
+        // Get singleton
+        static clProfiler *getInstance();
+
+        // Get number of record
+        int getNumRecord() const { return profilingData.size(); };
+
+        // Dump kernel profiling time
+        void getExecTime(std::string name = "");
+
+        // Add profiling info
+        void addExecTime(std::string name, double execTime);
+
+        // Set max string length
+        void setStringLen(size_t strLen) { this->strLen = strLen; }
+};
+
+// Singleton instance
+std::unique_ptr<clProfiler> clProfiler::instance;
+
+clProfiler *clProfiler::getInstance()
+{
+        // Instance already exists
+        if (instance.get())
+                return instance.get();
+        
+        // Create instance
+        instance.reset(new clProfiler());
+        return instance.get();
+}
+
+clProfiler::clProfiler()
+     :
+     strLen(16)
+{
+
+}
+
+clProfiler::~clProfiler()
+{
+
+}
+
+void clProfiler::getExecTime(std::string name)
+{
+        if (name != "")
+        {
+                if(profilingData.find(name) != profilingData.end())
+                        std::cout << name << " = " << profilingData[name] 
+                                  << " ms" << std::endl;
+        }
+        else
+        {
+                double totalTime = 0.0f;
+                std::cout << "Profiler info" << std::endl;
+                for(auto elem : profilingData)
+                {
+                        std::cout << "\t" << elem.first << " = " 
+                                  << elem.second << " ms" << std::endl;
+                        totalTime += elem.second;
+                }
+                std::cout << "Total time = " << totalTime << " ms" << std::endl;
+
+        }
+}
+
+void clProfiler::addExecTime(std::string name, double execTime)
+{
+        std::string sampleName = name;
+        sampleName.resize(strLen, ' ');
+        profilingData[sampleName] += execTime;
+}
 
 double time_stamp()
 {
@@ -50,8 +141,11 @@ cl_int clProfileNDRangeKernel(cl_command_queue cmdQ,
         char kernelName[1024];
         err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char), (void *)kernelName, NULL);
 
+        clProfiler *prof = clProfiler::getInstance();
+        prof->addExecTime(kernelName, execTimeMs);
+        
         // printf
-        printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
+        // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
 
         return enqueueErr;
 }
@@ -84,10 +178,21 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ,
         char kernelName[1024];
         err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char), (void *)kernelName, NULL);
 
+        clProfiler *prof = clProfiler::getInstance();
+        prof->addExecTime(kernelName, execTimeMs);
+
         // printf
-        printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
+        // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
 
         return enqueueErr;
+}
+
+void DumpProfilingInfo()
+{
+        clProfiler *prf = clProfiler::getInstance();
+
+        if (prf->getNumRecord())
+            prf->getExecTime();
 }
 
 }
