@@ -68,18 +68,17 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ,
 {
         cl_int   err;
         cl_int   enqueueErr;
-        cl_event kernelEvent;
 
         clFinish(cmdQ);
         
         // Enqueue kernel
         double start = time_stamp();
         enqueueErr = clEnqueueNDRangeKernel(cmdQ, kernel, wd, glbOs, glbSz, locSz, 0, NULL, NULL);
-        clWaitForEvents(1, &kernelEvent);
+        clFinish(cmdQ);
         double end = time_stamp();
         checkOpenCLErrors(enqueueErr, "Failed to profile on kernel");
 
-        double execTimeMs = (double)(end - start)*(double)(1e-06); 
+        double execTimeMs = (double)(end - start); 
 
         // Get kernel name
         char kernelName[1024];
