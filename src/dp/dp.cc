@@ -3,15 +3,6 @@
 #include <sys/time.h>
 #include <memory>
 
-double time_stamp()
-{
-        struct timeval t;
-        if(gettimeofday(&t, 0) != 0)
-                exit(-1);
-        return t.tv_sec + t.tv_usec/1e6;
-}
-
-
 DynamicParallelism::DynamicParallelism(int N)
 {
         runtime  = clRuntime::getInstance();

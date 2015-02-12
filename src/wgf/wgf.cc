@@ -1,16 +1,7 @@
 #include "wgf.h"
 
 #include <math.h>
-#include <sys/time.h>
 #include <memory>
-
-double time_stamp()
-{
-        struct timeval t;
-        if(gettimeofday(&t, 0) != 0)
-        	exit(-1);
-        return t.tv_sec + t.tv_usec/1e6;
-}
 
 WorkGroupFunc::WorkGroupFunc(int N)
 {
@@ -20,7 +11,7 @@ WorkGroupFunc::WorkGroupFunc(int N)
 	platform = runtime->getPlatformID();
 	device   = runtime->getDevice();
 	context  = runtime->getContext();
-	cmdQueue = runtime->getCmdQueue(0);
+	cmdQueue = runtime->getCmdQueue(0, true);
 
         numElems = N;
         numElemsBytes = numElems * sizeof(int);
@@ -112,7 +103,7 @@ void WorkGroupFunc::FreeBuffer()
 
 void WorkGroupFunc::RunSM()
 {
-        
+
 }
 
 void WorkGroupFunc::Run2Pass()
@@ -130,14 +121,14 @@ void WorkGroupFunc::Run2Pass()
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 2, dst_0);
         checkOpenCLErrors(err, "Failed to set args in kernel_wgf_reduce");
 
-        err = clProfileNDRangeKernel(
+        err = clTimeNDRangeKernel(
                 cmdQueue,
                 kernel_wgf_reduce,
                 1,
                 0, &globalSize_0, &localSize_0,
                 0, 0, 0
         );
-        checkOpenCLErrors(err, "Failed at clProfileNDRangeKernel");
+        checkOpenCLErrors(err, "Failed at clTimeNDRangeKernel");
 
         int numWG = globalSize_0 / localSize_0;
         err  = clSetKernelArg(kernel_wgf_reduce, 0, sizeof(int), (void *)&numWG);
@@ -145,14 +136,14 @@ void WorkGroupFunc::Run2Pass()
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce, 2, dst_0);
         checkOpenCLErrors(err, "Failed to set args in kernel_wgf_reduce");
 
-        err = clProfileNDRangeKernel(
+        err = clTimeNDRangeKernel(
                 cmdQueue,
                 kernel_wgf_reduce,
                 1,
                 0, &globalSize_1, &localSize_1,
                 0, 0, 0
         );
-        checkOpenCLErrors(err, "Failed at clProfileNDRangeKernel");     
+        checkOpenCLErrors(err, "Failed at clTimeNDRangeKernel");     
 
         // Reduction result
         Dump(dst_0, 1);
@@ -171,14 +162,14 @@ void WorkGroupFunc::RunAtomic()
         err |= clSetKernelArgSVMPointer(kernel_wgf_reduce_atomic, 2, dst_1);
         checkOpenCLErrors(err, "Failed to set args in kernel_wgf_reduce");
 
-        err = clProfileNDRangeKernel(
+        err = clTimeNDRangeKernel(
                 cmdQueue,
                 kernel_wgf_reduce_atomic,
                 1,
                 0, &globalSize_0, &localSize_0,
                 0, 0, 0
         );
-        checkOpenCLErrors(err, "Failed at clProfileNDRangeKernel");
+        checkOpenCLErrors(err, "Failed at clTimeNDRangeKernel");
 
         // Reduction result
         Dump(dst_1, 1);
