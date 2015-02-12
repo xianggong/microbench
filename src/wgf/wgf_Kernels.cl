@@ -1,3 +1,10 @@
+__kernel void sm_reduce(         const int  numElems,
+			__global const int *src,
+			__global       int *dst)
+{
+	
+}
+
 __kernel void wgf_reduce(         const int  numElems,
 			 __global const int *src,
 			 __global       int *dst)

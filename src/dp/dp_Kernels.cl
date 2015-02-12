@@ -51,7 +51,7 @@ __kernel void saxpy_dp(         const int    numElems,
     
     __global const float *src_0_child = &src_0[child_offset];
     __global const float *src_1_child = &src_1[child_offset];
-    __global const float *dst_0_child = &dst_0[child_offset];
+    __global       float *dst_0_child = &dst_0[child_offset];
 
     queue_t defQ = get_default_queue();
     ndrange_t ndrange1 = ndrange_1D(child_global_sz);

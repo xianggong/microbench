@@ -7,7 +7,7 @@ double time_stamp()
 {
         struct timeval t;
         if(gettimeofday(&t, 0) != 0)
-        	exit(-1);
+                exit(-1);
         return t.tv_sec + t.tv_usec/1e6;
 }
 
@@ -215,18 +215,18 @@ void DynamicParallelism::runDP()
 
 int main(int argc, char const *argv[])
 {
-	std::unique_ptr<DynamicParallelism> dp;
+        std::unique_ptr<DynamicParallelism> dp;
 
-	if (argc > 2)
-	{
-		printf("Usage: ./dp #\n");
-		return -1;
-	}
+        if (argc > 2)
+        {
+                printf("Usage: ./dp #\n");
+                return -1;
+        }
 
-	if (argc == 1)
-	        dp.reset(new DynamicParallelism(8192));
-	else
-		dp.reset(new DynamicParallelism(atoi(argv[1])));
+        if (argc == 1)
+                dp.reset(new DynamicParallelism(8192));
+        else
+                dp.reset(new DynamicParallelism(atoi(argv[1])));
 
         printf("Running...\n");
 

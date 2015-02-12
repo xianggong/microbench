@@ -16,6 +16,7 @@ class WorkGroupFunc
 	cl_command_queue cmdQueue;
 
 	cl_program       program;
+	cl_kernel        kernel_sm_reduce;
 	cl_kernel        kernel_wgf_reduce;
 	cl_kernel        kernel_wgf_reduce_atomic;
 
@@ -37,6 +38,7 @@ public:
 	explicit WorkGroupFunc(int N);
 	~WorkGroupFunc();
 
+	void RunSM();
 	void Run2Pass();
 	void RunAtomic();
 	void Dump(int *svm_ptr, int numElems);

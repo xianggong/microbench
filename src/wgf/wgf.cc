@@ -110,6 +110,11 @@ void WorkGroupFunc::FreeBuffer()
         clSVMFreeSafe(context, dst_1);
 }
 
+void WorkGroupFunc::RunSM()
+{
+        
+}
+
 void WorkGroupFunc::Run2Pass()
 {
 	cl_int err;
