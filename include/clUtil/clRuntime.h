@@ -53,14 +53,17 @@ public:
         static clRuntime *getInstance();
 
         /// Getters
-        cl_platform_id const getPlatformID() { return platform; }
+        cl_platform_id getPlatformID() const { return platform; }
 
-        cl_device_id const getDevice() { return device; }
+        cl_device_id getDevice() const { return device; }
 
-        cl_context const getContext() { return context; }
+        cl_context getContext() const { return context; }
 
         // Get a command queue by index, create it if doesn't exist
-        cl_command_queue getCmdQueue(int index, bool enableProfiling = false);
+        cl_command_queue getCmdQueue(int index, cl_command_queue_properties properties = 0);
+
+        // Get number of compute units of current device
+        cl_uint getNumComputeUnit() const;
 
         // Device SVM support
         bool isSVMavail(enum clSVMLevel level);
@@ -105,6 +108,21 @@ clRuntime::clRuntime()
 
         // Check if support CL 2.0
         // requireCL20();
+
+        // cl_context_properties cps[3] =
+        //         {
+        //                 CL_CONTEXT_PLATFORM,
+        //                 (cl_context_properties)platform,
+        //                 0
+        //         };
+
+        // context = clCreateContextFromType(
+        //                             cps,
+        //                             CL_DEVICE_TYPE_GPU,
+        //                             NULL,
+        //                             NULL,
+        //                             &err);
+        // checkOpenCLErrors(err, "Failed at clCreateContextFromType");
 
         // Create a context
         context = clCreateContext(0, 1, &device, NULL, NULL, &err);
@@ -235,20 +253,31 @@ int clRuntime::displayAllInfo()
         displayDeviceInfo();
 }
 
-cl_command_queue clRuntime::getCmdQueue(int index, bool enableProfiling)
+cl_command_queue clRuntime::getCmdQueue(int index, cl_command_queue_properties properties)
 {
         cl_int err;
-        cl_command_queue cmdQ;
-        const cl_queue_properties prop = CL_QUEUE_PROFILING_ENABLE;
 
         if (index < cmdQueueRepo.size())
                 return cmdQueueRepo[index];
         else
         {
-                if (enableProfiling)
-                        cmdQ = clCreateCommandQueueWithProperties(context, device, NULL, &err);
-                else
-                        cmdQ = clCreateCommandQueueWithProperties(context, device, &prop, &err);
+#ifdef CL_VERSION_2_0
+                std::vector<cl_queue_properties> queue_properties;
+
+                if(properties)
+                {
+                    queue_properties.push_back(CL_QUEUE_PROPERTIES);
+                    queue_properties.push_back(cl_queue_properties(properties));
+                    queue_properties.push_back(cl_queue_properties(0));
+                }
+
+                const cl_queue_properties *queue_properties_ptr =
+                    queue_properties.empty() ? 0 : &queue_properties[0];
+
+                cl_command_queue cmdQ = clCreateCommandQueueWithProperties(context, device, queue_properties_ptr, &err);
+#else
+                cl_command_queue cmdQ = clCreateCommandQueue(context, device, 0, &err);
+#endif
                 checkOpenCLErrors(err, "Failed at clCreateCommandQueueWithProperties");
                 cmdQueueRepo.push_back(cmdQ);
                 return cmdQ;
@@ -257,6 +286,7 @@ cl_command_queue clRuntime::getCmdQueue(int index, bool enableProfiling)
 
 bool clRuntime::isSVMavail(enum clSVMLevel level)
 {
+#ifdef CL_VERSION_2_0
         cl_device_svm_capabilities caps;
 
         cl_int err = clGetDeviceInfo(
@@ -265,7 +295,7 @@ bool clRuntime::isSVMavail(enum clSVMLevel level)
                 sizeof(cl_device_svm_capabilities),
                 &caps,
                 0);
-        checkOpenCLErrors(err, "Failed to clGetDeviceInfo, SVM cap")
+        checkOpenCLErrors(err, "Failed at clGetDeviceInfo: CL_DEVICE_SVM_CAPABILITIES");
 
         switch(level)
         {
@@ -286,8 +316,19 @@ bool clRuntime::isSVMavail(enum clSVMLevel level)
                 return false;
 
         }
-
+#endif
         return false;
+}
+
+cl_uint clRuntime::getNumComputeUnit() const
+{
+    cl_int err;
+    cl_uint numComputeUnit;
+
+    err = clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &numComputeUnit, NULL);
+    checkOpenCLErrors(err, "Failed at clGetDeviceInfo: CL_DEVICE_MAX_COMPUTE_UNITS");
+
+    return numComputeUnit;
 }
 
 } // namespace clHelper
