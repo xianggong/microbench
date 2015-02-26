@@ -178,6 +178,17 @@ void CCK::RunMulti()
 
 }
 
+void CCK::Dump(float *svm_ptr, int numElems)
+{
+        cl_int err;
+
+        clEnqueueSVMMap(getCmdQueue(0), CL_TRUE, CL_MAP_READ, svm_ptr, sizeof(int) * N, 0, NULL, NULL);
+        for (int i = 0; i < N; ++i)
+                std::cout << svm_ptr[i] << std::endl;
+        clEnqueueSVMUnmap(getCmdQueue(0), svm_ptr, 0, NULL, NULL);
+
+}
+
 int main(int argc, char const *argv[])
 {
         std::unique_ptr<CCK> tp(new CCK());
