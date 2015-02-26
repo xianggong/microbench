@@ -21,6 +21,9 @@ class clProfiler
 
         // String length
         size_t strLen;
+       
+        // Count
+        int count;
 
 public:
 
@@ -58,14 +61,16 @@ clProfiler *clProfiler::getInstance()
 
 clProfiler::clProfiler()
      :
-     strLen(16)
+     strLen(16),
+     count(0)
 {
 
 }
 
 clProfiler::~clProfiler()
 {
-
+        if (getNumRecord())
+            getExecTime();
 }
 
 void clProfiler::getExecTime(std::string name)
@@ -96,6 +101,11 @@ void clProfiler::getExecTime(std::string name)
 void clProfiler::addExecTime(std::string name, double execTime)
 {
         std::string sampleName = name;
+        count++;
+        if(count < 10)
+                sampleName = std::to_string(0) + std::to_string(count) + " " +sampleName;
+        else
+                sampleName = std::to_string(count) + " " + sampleName;
         sampleName.resize(strLen, ' ');
         profilingData[sampleName] += execTime;
 }

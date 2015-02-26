@@ -74,7 +74,7 @@ void CCK::InitKernel()
                 kernels.push_back(kernel);
         }
 
-
+        printf("Init kernel done\n");
 }
 
 void CCK::InitBuffer()
@@ -84,10 +84,15 @@ void CCK::InitBuffer()
 
         size_t sizeBytes = sizeof(float) * numElems;
         srcDst = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeBytes, 0);
-        checkOpenCLSVMBuffer(srcDst);
+        if(!srcDst)
+        {
+               std::cout << "Failed to allocate buffer" << std::endl;
+               exit(-1);
+        }
 
         err  = clEnqueueSVMMemFill(getCmdQueue(0), srcDst, (const void *)&one, sizeof(float), sizeBytes, 0, NULL, NULL);
         checkOpenCLErrors(err, "Failed to fill SVM buffer");
+        printf("Init buffer done\n");
 }
 
 void CCK::FreeKernel()
@@ -102,15 +107,18 @@ void CCK::FreeKernel()
 
         clReleaseProgram(program);
         checkOpenCLErrors(err, "Failed to release program");
+        printf("Free kernel done\n");
 }
 
 void CCK::FreeBuffer()
 {
         clSVMFreeSafe(context, srcDst);
+        printf("Free buffer done\n");
 }
 
 void CCK::RunSingle()
 {
+        std::cout << "RunSingle" << std::endl;
         cl_int err;
 
         // A single kernel handles all data
@@ -137,6 +145,7 @@ void CCK::RunSingle()
 
 void CCK::RunMulti()
 {
+        std::cout << "RunMulti" << std::endl;
         cl_int err;
 
         // Launching multiple kernels to process the data

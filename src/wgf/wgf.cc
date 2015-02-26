@@ -3,6 +3,10 @@
 #include <math.h>
 #include <memory>
 
+#if ENABLE_PROFILE
+#define clEnqueueNDRangeKernel clTimeNDRangeKernel
+#endif
+
 WorkGroupFunc::WorkGroupFunc(int N)
 {
         runtime  = clRuntime::getInstance();

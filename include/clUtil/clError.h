@@ -6,7 +6,7 @@
 #include <CL/cl.h>
 
 #define checkOpenCLSVMBuffer(buffer) \
-    if (!buffer) \
+    if (!(buffer)) \
     	std::cout << "Location : " << __FILE__ << ":" <<__LINE__ << " invalid SVM buffer" << std::endl;\
     exit(-1); 
     
