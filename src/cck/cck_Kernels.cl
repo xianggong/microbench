@@ -6,14 +6,8 @@ __kernel void cck_dummy(            const int    numElems,
     if (gid < numElems)
     for (int i = 0; i < 65536; ++i)
     {
-        srcDst[gid] *= 1.2f;
-        srcDst[gid] += srcDst[gid];
-        srcDst[gid] /= 1.2f;
-    }
-    for (int i = 0; i < 65536; ++i)
-    {
-        srcDst[gid] *= 1.2f;
-        srcDst[gid] += srcDst[gid];
-        srcDst[gid] /= 1.2f;
+        srcDst[gid] *= 1.0f;
+        srcDst[gid] += 1.0f;
+        srcDst[gid] /= 1.0f;
     }
 }

@@ -119,6 +119,7 @@ void CCK::FreeBuffer()
 void CCK::RunSingle()
 {
         std::cout << "RunSingle" << std::endl;
+        Dump(srcDst, numElems);
         cl_int err;
 
         // A single kernel handles all data
@@ -182,8 +183,8 @@ void CCK::Dump(float *svm_ptr, int numElems)
 {
         cl_int err;
 
-        clEnqueueSVMMap(getCmdQueue(0), CL_TRUE, CL_MAP_READ, svm_ptr, sizeof(int) * N, 0, NULL, NULL);
-        for (int i = 0; i < N; ++i)
+        clEnqueueSVMMap(getCmdQueue(0), CL_TRUE, CL_MAP_READ, svm_ptr, sizeof(float) * numElems, 0, NULL, NULL);
+        for (int i = 0; i < numElems; ++i)
                 std::cout << svm_ptr[i] << std::endl;
         clEnqueueSVMUnmap(getCmdQueue(0), svm_ptr, 0, NULL, NULL);
 
