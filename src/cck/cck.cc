@@ -17,12 +17,16 @@ CCK::CCK()
         // Create numCU command queues
         for (int i = 0; i < numCU; ++i)
                 queues.push_back(runtime->getCmdQueue(i));
+
+        // Init
+        InitKernel();
+        InitBuffer();
 }
 
 CCK::~CCK()
 {
-        FreeKernel();
         FreeBuffer();
+        FreeKernel();
 }
 
 void CCK::InitKernel()
