@@ -5,32 +5,32 @@
 
 WorkGroupFunc::WorkGroupFunc(int N)
 {
-	runtime  = clRuntime::getInstance();
-	file     = clFile::getInstance();
+        runtime  = clRuntime::getInstance();
+        file     = clFile::getInstance();
 
-	platform = runtime->getPlatformID();
-	device   = runtime->getDevice();
-	context  = runtime->getContext();
-	cmdQueue = runtime->getCmdQueue(0, true);
+        platform = runtime->getPlatformID();
+        device   = runtime->getDevice();
+        context  = runtime->getContext();
+        cmdQueue = runtime->getCmdQueue(0, true);
 
         numElems = N;
         numElemsBytes = numElems * sizeof(int);
 
-	InitKernel();
-	InitBuffer();
+        InitKernel();
+        InitBuffer();
 }
 
 WorkGroupFunc::~WorkGroupFunc()
 {
-	FreeBuffer();
-	FreeKernel();
+        FreeBuffer();
+        FreeKernel();
 }
 
 void WorkGroupFunc::InitKernel()
 {
-	cl_int err;
+        cl_int err;
 
-	// Open kernel file
+        // Open kernel file
         file->open("wgf_Kernels.cl");
 
         // Create program
@@ -64,10 +64,10 @@ void WorkGroupFunc::InitKernel()
 
 void WorkGroupFunc::InitBuffer()
 {
-	cl_int err;
+        cl_int err;
 
-	src_0 = (int *)clSVMAlloc(context, CL_MEM_READ_ONLY, numElemsBytes, 0);
-	dst_0 = (int *)clSVMAlloc(context, CL_MEM_WRITE_ONLY, numElemsBytes, 0);
+        src_0 = (int *)clSVMAlloc(context, CL_MEM_READ_ONLY, numElemsBytes, 0);
+        dst_0 = (int *)clSVMAlloc(context, CL_MEM_WRITE_ONLY, numElemsBytes, 0);
         src_1 = (int *)clSVMAlloc(context, CL_MEM_READ_ONLY, numElemsBytes, 0);
         dst_1 = (int *)clSVMAlloc(context, CL_MEM_WRITE_ONLY, numElemsBytes, 0);
 
@@ -82,21 +82,21 @@ void WorkGroupFunc::InitBuffer()
 
 void WorkGroupFunc::FreeKernel()
 {
-	cl_int err;
+        cl_int err;
 
-	err = clReleaseKernel(kernel_wgf_reduce);
-	checkOpenCLErrors(err, "Failed to release kernel_wgf_reduce");
+        err = clReleaseKernel(kernel_wgf_reduce);
+        checkOpenCLErrors(err, "Failed to release kernel_wgf_reduce");
         err = clReleaseKernel(kernel_wgf_reduce_atomic);
         checkOpenCLErrors(err, "Failed to release kernel_wgf_reduce");
 
-	err = clReleaseProgram(program);
-	checkOpenCLErrors(err, "Failed to release program");
+        err = clReleaseProgram(program);
+        checkOpenCLErrors(err, "Failed to release program");
 }
 
 void WorkGroupFunc::FreeBuffer()
 {
-	clSVMFreeSafe(context, src_0);
-	clSVMFreeSafe(context, dst_0);
+        clSVMFreeSafe(context, src_0);
+        clSVMFreeSafe(context, dst_0);
         clSVMFreeSafe(context, src_1);
         clSVMFreeSafe(context, dst_1);
 }
@@ -108,10 +108,10 @@ void WorkGroupFunc::RunSM()
 
 void WorkGroupFunc::Run2Pass()
 {
-	cl_int err;
+        cl_int err;
 
-	size_t globalSize_0 = std::min(int(ceil(numElems/256) * 256), 1024);
-	size_t localSize_0  = 256;
+        size_t globalSize_0 = std::min(int(ceil(numElems/256) * 256), 1024);
+        size_t localSize_0  = 256;
         size_t globalSize_1 = 256;
         size_t localSize_1  = 256;
         int N = numElems;
@@ -177,11 +177,11 @@ void WorkGroupFunc::RunAtomic()
 
 void WorkGroupFunc::Dump(int *svm_ptr, int N)
 {
-	cl_int err;
+        cl_int err;
 
-	clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MAP_READ, svm_ptr, sizeof(int) * N, 0, NULL, NULL);
-	for (int i = 0; i < N; ++i)
-		std::cout << dst_0[i] << std::endl;
+        clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MAP_READ, svm_ptr, sizeof(int) * N, 0, NULL, NULL);
+        for (int i = 0; i < N; ++i)
+                std::cout << dst_0[i] << std::endl;
         clEnqueueSVMUnmap(cmdQueue, svm_ptr, 0, NULL, NULL);
 }
 
@@ -194,9 +194,9 @@ int main(int argc, char const *argv[])
         }
 
         std::unique_ptr<WorkGroupFunc> wgf(new WorkGroupFunc(atoi(argv[1])));
-	
-	wgf->Run2Pass();
+        
+        wgf->Run2Pass();
         wgf->RunAtomic();
 
-	return 0;
+        return 0;
 }

@@ -13,35 +13,43 @@ class CCK
 	cl_platform_id   platform;
 	cl_device_id     device;
 	cl_context       context;
-	cl_command_queue cmdQueue0;
-	cl_command_queue cmdQueue1;
-	cl_command_queue cmdQueue2;
-	cl_command_queue cmdQueue3;
-	cl_command_queue cmdQueue4;
-	cl_command_queue cmdQueue5;
-	cl_command_queue cmdQueue6;
-	cl_command_queue cmdQueue7;
-	cl_command_queue cmdQueue8;
-	cl_command_queue cmdQueue9;
-	cl_command_queue cmdQueue10;
-	cl_command_queue cmdQueue11;
-	cl_command_queue cmdQueue12;
-	cl_command_queue cmdQueue13;
-	cl_command_queue cmdQueue14;
-	cl_command_queue cmdQueue15;
+
+	std::vector<cl_command_queue> queues;
 
 	cl_program       program;
-	cl_kernel        kernel;
+	std::vector<cl_kernel> kernels;
 
-public:
-	CCK();
-	~CCK();
+	cl_command_queue getCmdQueue(int N) { 
+		if (N < queues.size())
+			return queues[N];
+		return nullptr;
+	}
 
+	cl_kernel getKernel(int N) {
+		if (N < kernels.size())
+			return kernels[N];
+		return nullptr;
+	}
+
+	int              numElems;
+	float           *srcDst;
+
+	/// Private functions
 	void InitKernel();
 	void InitBuffer();
 
 	void FreeKernel();
 	void FreeBuffer();
+
+	/// Dump buffer data for debug
+	void Dump(float *svm_ptr, int numElems);
+
+public:
+	CCK();
+	~CCK();
+
+	void RunSingle();
+	void RunMulti();
 	
 };
 

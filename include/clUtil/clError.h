@@ -5,6 +5,11 @@
 #include <iostream>
 #include <CL/cl.h>
 
+#define checkOpenCLSVMBuffer(buffer) \
+    if (!buffer) \
+    	std::cout << "Location : " << __FILE__ << ":" <<__LINE__ << " invalid SVM buffer" << std::endl;\
+    exit(-1); 
+    
 #define checkOpenCLErrors(actual, msg) \
     if(checkVal(actual, CL_SUCCESS, msg)) \
     { \
