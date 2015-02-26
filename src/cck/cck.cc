@@ -141,6 +141,7 @@ void CCK::RunSingle()
         );
         checkOpenCLErrors(err, "Failed at clTimeNDRangeKernel");
 
+        Dump(srcDst, numElems);
 }
 
 void CCK::RunMulti()
@@ -164,7 +165,7 @@ void CCK::RunMulti()
                 checkOpenCLErrors(err, "Failed to set args in kernel");
 
                 err = clTimeNDRangeKernel(
-                        getCmdQueue(0),
+                        getCmdQueue(i),
                         krnl,
                         1,
                         0, &globalSize, &localSize,
@@ -172,6 +173,8 @@ void CCK::RunMulti()
                 );
                 checkOpenCLErrors(err, "Failed at clTimeNDRangeKernel");
         }
+        
+        Dump(srcDst, numElems);
 
 }
 
