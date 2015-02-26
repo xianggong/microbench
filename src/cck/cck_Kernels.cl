@@ -1,5 +1,5 @@
-__kernel void cck_dummy(         const int    numElems,
-                          __global const float *srcDst)
+__kernel void cck_dummy(            const int    numElems,
+                          __global        float *srcDst)
 {
     uint gid = get_global_id(0);
 
