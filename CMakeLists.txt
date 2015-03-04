@@ -1,5 +1,5 @@
 set( FOLDER_NAME microbench )
-set( SUBDIRECTORIES src )
+set( SUBDIRECTORIES src test )
 
 ############################################################################
 

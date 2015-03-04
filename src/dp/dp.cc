@@ -3,6 +3,10 @@
 #include <sys/time.h>
 #include <memory>
 
+#if ENABLE_PROFILE
+#define clEnqueueNDRangeKernel clTimeNDRangeKernel
+#endif
+
 DynamicParallelism::DynamicParallelism(int N)
 {
         runtime  = clRuntime::getInstance();
@@ -132,7 +136,6 @@ void DynamicParallelism::runNaive()
         err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 4, saxpy_dst_0);
         checkOpenCLErrors(err, "Failed to set args in saxpy_naive kernel");
 
-        double start = time_stamp();
         err = clEnqueueNDRangeKernel(
                 cmdQueue,
                 kernel_saxpy_naive,
@@ -140,9 +143,7 @@ void DynamicParallelism::runNaive()
                 0, globalSize, localSize,
                 0, 0, 0
         );
-        double end = time_stamp();
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
-        printf("runNaive takes %f\n", end - start);
 }
 
 void DynamicParallelism::runStride()
@@ -163,7 +164,6 @@ void DynamicParallelism::runStride()
         err |= clSetKernelArgSVMPointer(kernel_saxpy_stride, 4, saxpy_dst_0);
         checkOpenCLErrors(err, "Failed to set args in saxpy_naive kernel");
 
-        double start = time_stamp();
         err = clEnqueueNDRangeKernel(
                 cmdQueue,
                 kernel_saxpy_stride,
@@ -171,9 +171,7 @@ void DynamicParallelism::runStride()
                 0, globalSize, localSize,
                 0, 0, 0
         );
-        double end = time_stamp();
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
-        printf("runStride takes %f\n", end - start);
 }
 
 void DynamicParallelism::runDP()
@@ -190,7 +188,6 @@ void DynamicParallelism::runDP()
         err |= clSetKernelArgSVMPointer(kernel_saxpy_dp, 4, saxpy_dst_0);
         checkOpenCLErrors(err, "Failed to set args in saxpy_naive kernel");
 
-        double start = time_stamp();
         err = clEnqueueNDRangeKernel(
                 cmdQueue,
                 kernel_saxpy_dp,
@@ -198,9 +195,7 @@ void DynamicParallelism::runDP()
                 0, globalSize, localSize,
                 0, 0, 0
         );
-        double end = time_stamp();
         checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
-        printf("runDP takes %f\n", end - start);
         
 }
 
@@ -223,7 +218,7 @@ int main(int argc, char const *argv[])
 
         dp->runNaive();
         dp->runStride();
-        dp->runDP();
+        // dp->runDP();
         
         printf("Done!\n");
 
