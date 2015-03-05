@@ -219,7 +219,6 @@ double time_stamp()
 }
 
 // Enqueue and profile a kernel
-// Enqueue and profile a kernel
 cl_int clProfileNDRangeKernel(cl_command_queue cmdQ,
                               cl_kernel        kernel,
                               cl_uint          wd,

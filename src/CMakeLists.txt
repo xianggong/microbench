@@ -1,5 +1,5 @@
 set( FOLDER_NAME src )
-set( SUBDIRECTORIES cck dp memAccess template wgf )
+set( SUBDIRECTORIES cck dp memAccess svm template wgf )
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 cmake_minimum_required( VERSION 2.6.0 )

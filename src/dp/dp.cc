@@ -3,6 +3,8 @@
 #include <sys/time.h>
 #include <memory>
 
+#define ENABLE_PROFILE 1
+
 #if ENABLE_PROFILE
 #define clEnqueueNDRangeKernel clTimeNDRangeKernel
 #endif
@@ -218,7 +220,7 @@ int main(int argc, char const *argv[])
 
         dp->runNaive();
         dp->runStride();
-        // dp->runDP();
+        dp->runDP();
         
         printf("Done!\n");
 

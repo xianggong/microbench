@@ -151,6 +151,7 @@ clRuntime::~clRuntime()
                 err = clReleaseDevice(device);
                 checkOpenCLErrors(err, "Failed at clReleaseDevice");
         }
+        printf("~clRuntime\n");
 }
 
 void clRuntime::requireCL20()
