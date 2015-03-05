@@ -57,7 +57,7 @@ SVM::~SVM()
 
         // err = clReleaseDevice(device);
         // checkOpenCLErrors(err, "Failed at clReleaseDevice");
-        printf("~SVM\n");
+        // printf("~SVM\n");
 }
 
 void SVM::InitKernel()
@@ -141,7 +141,7 @@ void SVM::RunCoarseGrain()
 
                 err = clFinish(cmdQueue);
                 checkOpenCLErrors(err, "Failed to clFlush cmdQueue");
-                printf("clFinish SVMMap\n");
+                // printf("clFinish SVMMap\n");
 
                 for (int i = 0; i < glbSize; ++i)
                         saxpy_src_0[i] = 1.0f;
@@ -156,7 +156,7 @@ void SVM::RunCoarseGrain()
 
                 err = clFinish(cmdQueue);
                 checkOpenCLErrors(err, "Failed to clFlush cmdQueue");
-                printf("clFinish SVMUnmap\n");
+                // printf("clFinish SVMUnmap\n");
 
                 // Run kernel        
                 size_t globalSize[1] = {(size_t)glbSize};
@@ -177,34 +177,34 @@ void SVM::RunCoarseGrain()
                         0, 0, 0
                 );
                 checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
-                printf("clEnqueueNDRangeKernel\n");
+                // printf("clEnqueueNDRangeKernel\n");
 
                 err = clFinish(cmdQueue);
                 checkOpenCLErrors(err, "Failed to clFlush cmdQueue");
-                printf("clFinish SVMMap\n");
+                // printf("clFinish SVMMap\n");
 
                 // Dump buffer
                 clEnqueueSVMMap(cmdQueue, CL_TRUE, CL_MAP_READ, saxpy_dst_0, glbSizeBytes, 0, NULL, NULL);
 
                 err = clFinish(cmdQueue);
                 checkOpenCLErrors(err, "Failed to clFlush cmdQueue");
-                printf("clFinish SVMUnmap\n");
+                // printf("clFinish SVMUnmap\n");
 
-                for (int i = 0; i < glbSize; i += glbSize / 8)
-                        printf("%f ", saxpy_dst_0[i]);
-                printf("\n");
+                // for (int i = 0; i < glbSize; i += glbSize / 8)
+                //         printf("%f ", saxpy_dst_0[i]);
+                // printf("\n");
 
                 clEnqueueSVMUnmap(cmdQueue, saxpy_dst_0, 0, NULL, NULL);
 
                 err = clFinish(cmdQueue);
                 checkOpenCLErrors(err, "Failed to clFlush cmdQueue");
-                printf("clFinish SVMMap\n");
+                // printf("clFinish SVMMap\n");
 
                 // Free buffer
                 clSVMFree(context, saxpy_src_0);
                 clSVMFree(context, saxpy_src_1);
                 clSVMFree(context, saxpy_dst_0);
-                printf("clSVMFree\n");
+                // printf("clSVMFree\n");
         }
 }
 
@@ -217,10 +217,12 @@ void SVM::RunFineGrainBuffer()
                 // Init Buffer
                 size_t glbSizeBytes = glbSize * sizeof(float);
 
-                saxpy_src_0 = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY, glbSizeBytes, 0);
-                saxpy_src_1 = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY, glbSizeBytes, 0);
-                saxpy_dst_0 = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, glbSizeBytes, 0);
+                // Fine grain still needs to use clSVMAlloc
+                saxpy_src_0 = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY | CL_MEM_SVM_FINE_GRAIN_BUFFER, glbSizeBytes, 0);
+                saxpy_src_1 = (float *)clSVMAlloc(context, CL_MEM_READ_ONLY | CL_MEM_SVM_FINE_GRAIN_BUFFER, glbSizeBytes, 0);
+                saxpy_dst_0 = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER, glbSizeBytes, 0);
 
+                // No need to explicit map/unmap
                 for (int i = 0; i < glbSize; ++i)
                         saxpy_src_0[i] = 1.0f;
                 for (int i = 0; i < glbSize; ++i)
@@ -247,11 +249,72 @@ void SVM::RunFineGrainBuffer()
                         0, 0, 0
                 );
                 checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
-                printf("clEnqueueNDRangeKernel\n");
+                // printf("clEnqueueNDRangeKernel\n");
 
                 err = clFinish(cmdQueue);
                 checkOpenCLErrors(err, "Failed to clFlush cmdQueue");
-                printf("clFinish SVMMap\n");
+                // printf("clFinish SVMMap\n");
+
+                // Dump buffer
+                // for (int i = 0; i < glbSize; i += glbSize / 8)
+                //         printf("%f ", saxpy_dst_0[i]);
+                // printf("\n");
+
+                // Free buffer
+                clSVMFree(context, saxpy_src_0);
+                clSVMFree(context, saxpy_src_1);
+                clSVMFree(context, saxpy_dst_0);
+                // printf("clSVMFree\n");
+        }
+
+}
+
+void SVM::RunFineGrainSystem()
+{
+        if (runtime->isSVMavail(SVM_SYSTEM))
+        {
+                cl_int err;
+
+                // Init Buffer
+                size_t glbSizeBytes = glbSize * sizeof(float);
+
+                // Fine grain system alloc
+                saxpy_src_0 = (float *)aligned_alloc(sizeof(float), glbSizeBytes);
+                saxpy_src_1 = (float *)aligned_alloc(sizeof(float), glbSizeBytes);
+                saxpy_dst_0 = (float *)aligned_alloc(sizeof(float), glbSizeBytes);
+
+                // No need to explicit map/unmap
+                for (int i = 0; i < glbSize; ++i)
+                        saxpy_src_0[i] = 1.0f;
+                for (int i = 0; i < glbSize; ++i)
+                        saxpy_src_1[i] = 2.0f;
+                for (int i = 0; i < glbSize; ++i)
+                        saxpy_dst_0[i] = 3.0f;
+
+                // Run kernel        
+                size_t globalSize[1] = {(size_t)glbSize};
+                size_t localSize[1]  = {(size_t)locSize};
+
+                err  = clSetKernelArg(kernel_saxpy_naive, 0, sizeof(int), (void *)&glbSize);
+                err |= clSetKernelArg(kernel_saxpy_naive, 1, sizeof(int), (void *)&factor);
+                err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 2, saxpy_src_0);
+                err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 3, saxpy_src_1);
+                err |= clSetKernelArgSVMPointer(kernel_saxpy_naive, 4, saxpy_dst_0);
+                checkOpenCLErrors(err, "Failed to set args in saxpy_naive kernel");
+
+                err = clEnqueueNDRangeKernel(
+                        cmdQueue,
+                        kernel_saxpy_naive,
+                        1,
+                        0, globalSize, localSize,
+                        0, 0, 0
+                );
+                checkOpenCLErrors(err, "Failed at clEnqueueNDRangeKernel");
+                // printf("clEnqueueNDRangeKernel\n");
+
+                err = clFinish(cmdQueue);
+                checkOpenCLErrors(err, "Failed to clFlush cmdQueue");
+                // printf("clFinish SVMMap\n");
 
                 // Dump buffer
                 for (int i = 0; i < glbSize; i += glbSize / 8)
@@ -262,13 +325,8 @@ void SVM::RunFineGrainBuffer()
                 clSVMFree(context, saxpy_src_0);
                 clSVMFree(context, saxpy_src_1);
                 clSVMFree(context, saxpy_dst_0);
-                printf("clSVMFree\n");
+                // printf("clSVMFree\n");
         }
-
-}
-
-void SVM::RunFineGrainSystem()
-{
 
 }
 
@@ -287,8 +345,8 @@ int main(int argc, char const *argv[])
                 svm.reset(new SVM(atoi(argv[1])));
 
         svm->RunCoarseGrain();
-        // svm->RunFineGrainBuffer();
-        // svm->RunFineGrainSystem();
+        svm->RunFineGrainBuffer();
+        svm->RunFineGrainSystem();
 
         return 0;
 }
