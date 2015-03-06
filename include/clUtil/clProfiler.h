@@ -243,18 +243,14 @@ cl_int clProfileNDRangeKernel(cl_command_queue cmdQ,
         cl_ulong start = 0, end = 0;
         clGetEventProfilingInfo(perfEvent, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
         clGetEventProfilingInfo(perfEvent, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
-        cl_double execTimeMs = (cl_double)(end - start)*(cl_double)(1e-06); 
 
         // Get kernel name
         char kernelName[1024];
         err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char), (void *)kernelName, NULL);
 
         clProfiler *prof = clProfiler::getInstance();
-        // prof->addExecTime(kernelName, start/1e6, end/1e6);
+        prof->addExecTime(kernelName, (double)start, (double)end);
         
-        // printf
-        // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
-
         return enqueueErr;
 }
 
@@ -280,17 +276,12 @@ cl_int clTimeNDRangeKernel(cl_command_queue cmdQ,
         double end = time_stamp_ms();
         checkOpenCLErrors(enqueueErr, "Failed to profile on kernel");
 
-        double execTimeMs = (double)(end - start); 
-
         // Get kernel name
         char kernelName[1024];
         err = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 1024 * sizeof(char), (void *)kernelName, NULL);
         
         clProfiler *prof = clProfiler::getInstance();
         prof->addExecTime(kernelName, start, end);
-
-        // printf
-        // printf("Kernel %s costs %f ms\n", kernelName, execTimeMs);
 
         return enqueueErr;
 }

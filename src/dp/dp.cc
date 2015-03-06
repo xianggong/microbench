@@ -3,12 +3,6 @@
 #include <sys/time.h>
 #include <memory>
 
-#define ENABLE_PROFILE 1
-
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clTimeNDRangeKernel
-#endif
-
 DynamicParallelism::DynamicParallelism(int N)
 {
         runtime  = clRuntime::getInstance();
