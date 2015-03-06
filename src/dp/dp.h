@@ -16,12 +16,15 @@ class DynamicParallelism
 	cl_device_id     device;
 	cl_context       context;
 	cl_command_queue cmdQueue;
+	cl_command_queue cmdQueueDev;
 
 	// User managed OpenCL objects
 	cl_program       program;
 	cl_kernel        kernel_saxpy_naive;
 	cl_kernel        kernel_saxpy_stride;
-	cl_kernel        kernel_saxpy_dp;
+	cl_kernel        kernel_saxpy_dp_no_wait;
+	cl_kernel        kernel_saxpy_dp_wait_kernel;
+	cl_kernel        kernel_saxpy_dp_wait_workgroup;
 
 	// Parameters
 	int glbSize;
@@ -47,7 +50,9 @@ public:
 
 	void runNaive();
 	void runStride();
-	void runDP();
+	void runDPNoWait();
+	void runDPWaitKernel();
+	void runDPWaitWorkgroup();
 	
 };
 
