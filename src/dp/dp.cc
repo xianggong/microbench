@@ -177,7 +177,7 @@ void DynamicParallelism::runStride()
         checkOpenCLErrors(err, "Failed to query number of CU");
 
         size_t globalSize[1] = {(size_t) numCU * 64};
-        size_t localSize[1]  = {(size_t)locSize};
+        size_t localSize[1]  = {(size_t) locSize};
 
         err  = clSetKernelArg(kernel_saxpy_stride, 0, sizeof(int), (void *)&glbSize);
         err |= clSetKernelArg(kernel_saxpy_stride, 1, sizeof(int), (void *)&factor);

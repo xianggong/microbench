@@ -115,6 +115,6 @@ __kernel void saxpy_dp_wait_workgroup(         const int    numElems,
 
     void (^saxpy_dp_child_wrapper)(void) = ^{saxpy_dp_child(child_global_sz, factor, src_0_child, src_1_child, dst_0_child);};
           
-    int err_ret = enqueue_kernel(defQ, CLK_ENQUEUE_FLAGS_NO_WAIT, ndrange, saxpy_dp_child_wrapper);
+    int err_ret = enqueue_kernel(defQ, CLK_ENQUEUE_FLAGS_WAIT_WORK_GROUP, ndrange, saxpy_dp_child_wrapper);
 
 }
