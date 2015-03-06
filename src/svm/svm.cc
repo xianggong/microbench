@@ -2,12 +2,6 @@
 
 #include <memory>
 
-#define ENABLE_PROFILE 1
-
-#if ENABLE_PROFILE
-#define clEnqueueNDRangeKernel clTimeNDRangeKernel
-#endif
-
 SVM::SVM(int N)
 {
         runtime  = clRuntime::getInstance();
@@ -104,7 +98,7 @@ void SVM::FreeKernel()
         err = clReleaseProgram(program);
         checkOpenCLErrors(err, "Failed to release program");    
 
-        printf("FreeKernel\n");
+        // printf("FreeKernel\n");
 }
 
 void SVM::RunCoarseGrain()

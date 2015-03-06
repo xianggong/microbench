@@ -13,6 +13,12 @@ namespace clHelper
 #define clSVMFreeSafe(ctx, ptr) if(ptr) clSVMFree(ctx, ptr)
 #endif
 
+#define ENABLE_PROFILE 1
+
+#if ENABLE_PROFILE
+#define clEnqueueNDRangeKernel clTimeNDRangeKernel
+#endif
+
 } // namespace clHelper
 
 #endif
