@@ -2,7 +2,11 @@
 
 #include <memory>
 
-Pipe::Pipe()
+Pipe::Pipe(int numElems)
+        :localSize(64),
+         numPackets(16384),
+         numPacketsPerPipe(16384),
+         packetSize(4)
 {
         runtime  = clRuntime::getInstance();
         file     = clFile::getInstance();
@@ -11,17 +15,22 @@ Pipe::Pipe()
         device   = runtime->getDevice();
         context  = runtime->getContext();
 
-        cmdQueue = runtime->getCmdQueue(0);
+        cmdQueue_0 = runtime->getCmdQueue(0);
+        cmdQueue_1 = runtime->getCmdQueue(1);
+
+        this->numElems = numElems;
 
         // Init
         InitKernel();
         InitBuffer();
+        InitPipe();
 }
 
 Pipe::~Pipe()
 {
-        FreeBuffer();
         FreeKernel();
+        FreeBuffer();
+        FreePipe();
 }
 
 void Pipe::InitKernel()
@@ -54,16 +63,11 @@ void Pipe::InitKernel()
         }
 
         // Create kernel
-        int numCU = runtime->getNumComputeUnit();
-        cl_kernel kernel;
-        for (int i = 0; i < numCU; ++i)
-        {
-                kernel = clCreateKernel(program, "Pipe_dummy", &err);
-                checkOpenCLErrors(err, "Failed to clCreateKernel Pipe_dummy");
-                kernels.push_back(kernel);
-        }
+        kernel_pipe_consumer = clCreateKernel(program, "pipe_consumer", &err);
+        checkOpenCLErrors(err, "Failed to clCreateKernel pipe_consumer");
+        kernel_pipe_producer = clCreateKernel(program, "pipe_producer", &err);
+        checkOpenCLErrors(err, "Failed to clCreateKernel pipe_consumer");
 
-        printf("Init kernel done\n");
 }
 
 void Pipe::InitBuffer()
@@ -71,120 +75,102 @@ void Pipe::InitBuffer()
         cl_int err;
         float one = 1.0f;
 
-        size_t sizeBytes = sizeof(float) * numElems;
-        srcDst = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeBytes, 0);
-        if(!srcDst)
+        size_t sizeBytes = packetSize * numPackets; 
+        src = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeBytes, 0);
+        dst = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeBytes, 0);
+        if(!src || !dst)
         {
                std::cout << "Failed to allocate buffer" << std::endl;
                exit(-1);
         }
 
-        err  = clEnqueueSVMMemFill(getCmdQueue(0), srcDst, (const void *)&one, sizeof(float), sizeBytes, 0, NULL, NULL);
+        err  = clEnqueueSVMMemFill(cmdQueue_0, src, (const void *)&one, sizeof(float), sizeBytes, 0, NULL, NULL);
+        err  = clEnqueueSVMMemFill(cmdQueue_0, dst, (const void *)&one, sizeof(float), sizeBytes, 0, NULL, NULL);
         checkOpenCLErrors(err, "Failed to fill SVM buffer");
-        printf("Init buffer done\n");
+}
+
+void Pipe::InitPipe()
+{
+        cl_int err;
+        pipe = clCreatePipe(context, CL_MEM_HOST_NO_ACCESS, packetSize, numPackets, NULL, &err);
+        checkOpenCLErrors(err, "Failed to create pipe")
 }
 
 void Pipe::FreeKernel()
 {
         cl_int err;
 
-        for( auto &kernel : kernels)
-        {
-                err = clReleaseKernel(kernel);
-                checkOpenCLErrors(err, "Failed to release kernel");
-        }
+        err  = clReleaseKernel(kernel_pipe_consumer);
+        err |= clReleaseKernel(kernel_pipe_producer);
+        checkOpenCLErrors(err, "Failed to release kernel");
 
         clReleaseProgram(program);
         checkOpenCLErrors(err, "Failed to release program");
-        printf("Free kernel done\n");
 }
 
 void Pipe::FreeBuffer()
 {
-        clSVMFreeSafe(context, srcDst);
-        printf("Free buffer done\n");
+        clSVMFreeSafe(context, src);
+        clSVMFreeSafe(context, dst);
 }
 
-void Pipe::RunSingle()
-{
-        std::cout << "RunSingle" << std::endl;
-        Dump(srcDst, numElems);
-        cl_int err;
-
-        // A single kernel handles all data
-        size_t globalSize = runtime->getNumComputeUnit() * 64;
-        size_t localSize  = 64;
-        int N = numElems;
-
-        cl_kernel krnl = getKernel(0);
-
-        err  = clSetKernelArg(krnl, 0, sizeof(int), (void *)&N);
-        err |= clSetKernelArgSVMPointer(krnl, 1, srcDst);
-        checkOpenCLErrors(err, "Failed to set args in kernel 0");
-
-        err = clTimeNDRangeKernel(
-                getCmdQueue(0),
-                krnl,
-                1,
-                0, &globalSize, &localSize,
-                0, 0, 0
-        );
-        checkOpenCLErrors(err, "Failed at clTimeNDRangeKernel");
-
-        Dump(srcDst, numElems);
-}
-
-void Pipe::RunMulti()
-{
-        std::cout << "RunMulti" << std::endl;
-        cl_int err;
-
-        // Launching multiple kernels to process the data
-        size_t globalSize = 64;
-        size_t localSize  = 64;
-        int N = numElems;
-
-        cl_kernel krnl;
-        for (int i = 0; i < kernels.size(); ++i)
-        {
-                krnl = getKernel(i);
-                int srcDstOff = i * 64;
-
-                err  = clSetKernelArg(krnl, 0, sizeof(int), (void *)&N);
-                err |= clSetKernelArgSVMPointer(krnl, 1, &srcDst[srcDstOff]);
-                checkOpenCLErrors(err, "Failed to set args in kernel");
-
-                err = clTimeNDRangeKernel(
-                        getCmdQueue(i),
-                        krnl,
-                        1,
-                        0, &globalSize, &localSize,
-                        0, 0, 0
-                );
-                checkOpenCLErrors(err, "Failed at clTimeNDRangeKernel");
-        }
-        
-        Dump(srcDst, numElems);
-
-}
-
-void Pipe::Dump(float *svm_ptr, int numElems)
+void Pipe::FreePipe()
 {
         cl_int err;
 
-        clEnqueueSVMMap(getCmdQueue(0), CL_TRUE, CL_MAP_READ, svm_ptr, sizeof(float) * numElems, 0, NULL, NULL);
-        for (int i = 0; i < numElems; ++i)
-                std::cout << svm_ptr[i] << std::endl;
-        clEnqueueSVMUnmap(getCmdQueue(0), svm_ptr, 0, NULL, NULL);
+        err = clReleaseMemObject(pipe);
+        checkOpenCLErrors(err, "Failed to release pipe");
+}
 
+void Pipe::RunPipe()
+{
+        cl_int err;
+
+        size_t globalWorkItems = numPackets;
+        size_t localWorkItems  = localSize;
+
+        // Producer
+        err  = clSetKernelArgSVMPointer(kernel_pipe_producer, 0, src);
+        err |= clSetKernelArg(kernel_pipe_producer, 1, sizeof(cl_mem), (void *)&pipe);
+        checkOpenCLErrors(err, "Failed to clSetKernelArg");
+
+        err  = clEnqueueNDRangeKernel(cmdQueue_0, 
+                                      kernel_pipe_producer, 
+                                      1, 
+                                      NULL, 
+                                      &globalWorkItems, 
+                                      &localWorkItems, 
+                                      0, NULL, NULL);
+        checkOpenCLErrors(err, "Failed to launch NDRange");
+        clFinish(cmdQueue_0);
+
+        // Consumer
+        err  = clSetKernelArgSVMPointer(kernel_pipe_consumer, 0, src);
+        err |= clSetKernelArg(kernel_pipe_consumer, 1, sizeof(cl_mem), (void *)&pipe);
+        checkOpenCLErrors(err, "Failed to clSetKernelArg");
+
+        err  = clEnqueueNDRangeKernel(cmdQueue_1, 
+                                      kernel_pipe_consumer, 
+                                      1, 
+                                      NULL, 
+                                      &globalWorkItems, 
+                                      &localWorkItems, 
+                                      0, NULL, NULL);
+        checkOpenCLErrors(err, "Failed to launch NDRange");
+        clFinish(cmdQueue_1);
 }
 
 int main(int argc, char const *argv[])
 {
-        std::unique_ptr<Pipe> tp(new Pipe());
+        if (argc != 2)
+        {
+                printf("pipe #elements\n");
+                exit(-1);
+        }
+
+        std::unique_ptr<Pipe> pipe(new Pipe(atoi(argv[1])));
         
-        tp->RunSingle();
-        tp->RunMulti();
+        pipe->RunPipe();
 
         return 0;
 }
