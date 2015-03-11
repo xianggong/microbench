@@ -23,14 +23,12 @@ class Pipe
     cl_kernel        kernel_pipe_producer;
     cl_kernel        kernel_pipe_consumer;
 
-    int              numElems;
     float           *src;
     float           *dst;
 
     cl_mem           pipe;
     cl_uint          localSize;
     cl_uint          numPackets;
-    cl_uint          numPacketsPerPipe;
     cl_uint          packetSize;          
 
     /// Private functions
@@ -43,7 +41,7 @@ class Pipe
     void FreePipe();
 
 public:
-    Pipe(int numElems = 8192);
+    Pipe(int numPackets = 8192);
     ~Pipe();
 
     void Run();

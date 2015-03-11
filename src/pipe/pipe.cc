@@ -2,10 +2,9 @@
 
 #include <memory>
 
-Pipe::Pipe(int numElems)
+Pipe::Pipe(int numPackets)
         :localSize(64),
          numPackets(16384),
-         numPacketsPerPipe(16384),
          packetSize(4)
 {
         runtime  = clRuntime::getInstance();
@@ -18,7 +17,7 @@ Pipe::Pipe(int numElems)
         cmdQueue_0 = runtime->getCmdQueue(0);
         cmdQueue_1 = runtime->getCmdQueue(1);
 
-        this->numElems = numElems;
+        this->numPackets = numPackets;
 
         // Init
         InitKernel();
@@ -76,8 +75,8 @@ void Pipe::InitBuffer()
         float one = 1.0f;
 
         size_t sizeBytes = packetSize * numPackets; 
-        src = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeBytes, 0);
-        dst = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE, sizeBytes, 0);
+        src = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER, sizeBytes, 0);
+        dst = (float *)clSVMAlloc(context, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER, sizeBytes, 0);
         if(!src || !dst)
         {
                std::cout << "Failed to allocate buffer" << std::endl;
@@ -87,6 +86,13 @@ void Pipe::InitBuffer()
         err  = clEnqueueSVMMemFill(cmdQueue_0, src, (const void *)&one, sizeof(float), sizeBytes, 0, NULL, NULL);
         err  = clEnqueueSVMMemFill(cmdQueue_0, dst, (const void *)&one, sizeof(float), sizeBytes, 0, NULL, NULL);
         checkOpenCLErrors(err, "Failed to fill SVM buffer");
+        clFinish(cmdQueue_0);
+
+        // Dump buffer
+        printf("Before\n");
+        for (int i = 0; i < numPackets; i += numPackets / 8)
+                printf("%f %f\n", src[i], dst[i]);
+
 }
 
 void Pipe::InitPipe()
@@ -142,10 +148,9 @@ void Pipe::RunPipe()
                                       &localWorkItems, 
                                       0, NULL, NULL);
         checkOpenCLErrors(err, "Failed to launch NDRange");
-        clFinish(cmdQueue_0);
 
         // Consumer
-        err  = clSetKernelArgSVMPointer(kernel_pipe_consumer, 0, src);
+        err  = clSetKernelArgSVMPointer(kernel_pipe_consumer, 0, dst);
         err |= clSetKernelArg(kernel_pipe_consumer, 1, sizeof(cl_mem), (void *)&pipe);
         checkOpenCLErrors(err, "Failed to clSetKernelArg");
 
@@ -157,7 +162,13 @@ void Pipe::RunPipe()
                                       &localWorkItems, 
                                       0, NULL, NULL);
         checkOpenCLErrors(err, "Failed to launch NDRange");
-        clFinish(cmdQueue_1);
+
+        // Dump buffer
+        printf("After\n");
+        for (int i = 0; i < numPackets; i += numPackets / 8)
+                printf("%f %f\n", src[i], dst[i]);
+
+
 }
 
 int main(int argc, char const *argv[])
